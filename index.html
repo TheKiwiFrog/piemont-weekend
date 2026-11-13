@@ -193,7 +193,7 @@ html,body{overflow-x:hidden}
   </section>
 
   <section id="crew" class="crew">
-    <div class="bar"><span class="hint">Who's coming, arrival, car, who drives which day, food needs.</span></div>
+    <div class="bar"><span class="hint">Everyone who has opened the page and entered their name.</span></div>
     <div class="list" id="crewList"></div>
   </section>
 </main>
@@ -258,19 +258,6 @@ html,body{overflow-x:hidden}
   </div>
 </form></dialog>
 
-<!-- person -->
-<dialog id="dPerson"><form method="dialog" id="fPerson">
-  <h2 id="peTitle">Your details</h2>
-  <label>Name</label>
-  <input name="name" maxlength="40" required>
-  <label>Arrival · car · drives on · food needs</label>
-  <textarea name="note" maxlength="300" placeholder="Arriving Fri 12:30 with Julie's car, I drive Saturday, no shellfish"></textarea>
-  <div class="err" id="peErr"></div>
-  <div class="actions">
-    <button class="btn danger small" type="button" id="peDel">Remove</button>
-    <div class="r"><button class="btn ghost" type="button" data-close>Cancel</button><button class="btn" type="submit">Save</button></div>
-  </div>
-</form></dialog>
 
 <div class="toast" id="toast"></div>
 
@@ -306,7 +293,17 @@ const dayLabel = d => { const x = DAYS.find(z=>z[0]===d); return x ? `${x[1]} ${
 
 // ---------- name ----------
 function setMe(n){ me = n.trim().slice(0,40); try{localStorage.setItem("pwe_name", me);}catch(e){} $("#meName").textContent = "You're " + me; }
-$("#fName").addEventListener("submit", e => { const v=$("#nameInput").value.trim(); if(!v){e.preventDefault();return;} setMe(v); });
+$("#fName").addEventListener("submit", e => { const v=$("#nameInput").value.trim(); if(!v){e.preventDefault();return;} const old = me; setMe(v); registerMe(old); });
+async function registerMe(oldName){
+  if (!me) return;
+  const has = n => S.people.find(p => p.name.toLowerCase() === (n||"").toLowerCase());
+  if (has(me)) return;
+  const prev = oldName && oldName.toLowerCase() !== me.toLowerCase() ? has(oldName) : null;
+  const { error } = prev
+    ? await sb.from(T.people).update({ name: me }).eq("id", prev.id)
+    : await sb.from(T.people).insert({ name: me });
+  if (!error) load();
+}
 $("#changeName").onclick = () => { $("#nameInput").value = me||""; $("#dName").showModal(); };
 if (me) setMe(me);
 
@@ -321,7 +318,7 @@ function showTab(t){
   fab.style.display = "";
   if (t==="agenda") fab.textContent = "＋ Add to agenda";
   else if (t==="map" || t==="ideas") fab.textContent = "＋ Suggest a place";
-  else fab.textContent = "＋ Add me";
+  else fab.style.display = "none";
   fab.dataset.mode = t;
   if (t==="map") { initMap(); setTimeout(()=>{ map.invalidateSize(); fitMap(); }, 50); }
   if (location.hash.slice(1)!==t) history.replaceState(null,"","#"+t);
@@ -330,7 +327,6 @@ $("#fab").onclick = () => {
   const m = $("#fab").dataset.mode || "agenda";
   if (!me) return $("#dName").showModal();
   if (m==="agenda") openEvent(null, { day: curDay, start_time:"10:00", end_time:"12:00" });
-  else if (m==="crew") openPerson(S.people.find(p=>p.name.toLowerCase()===me.toLowerCase()) || null);
   else openPlace(null);
 };
 document.querySelectorAll("[data-close]").forEach(b => b.onclick = () => b.closest("dialog").close());
@@ -599,41 +595,20 @@ function fitMap(){
 
 // ---------- crew ----------
 function renderCrew(){
-  const meRow = me && S.people.find(p=>p.name.toLowerCase()===me.toLowerCase());
-  const list = S.people.map(p => `<div class="card">
+  const meLc = (me||"").toLowerCase();
+  const added = n => S.events.filter(e=>(e.added_by||"").toLowerCase()===n.toLowerCase()).length + S.places.filter(p=>(p.added_by||"").toLowerCase()===n.toLowerCase()).length;
+  $("#crewList").innerHTML = S.people.length ? S.people.map(p => {
+    const a = added(p.name);
+    return `<div class="card">
     <div class="avatar">${esc(p.name[0].toUpperCase())}</div>
-    <div class="body"><h3>${esc(p.name)}</h3><div class="meta">${esc(p.note||"No details yet")}</div></div>
-    <button class="btn small ghost" data-p="${p.id}">Edit</button></div>`).join("");
-  $("#crewList").innerHTML = (list || "") + (!meRow ? `<div class="empty">${S.people.length?"":"Nobody's listed yet. "}Tap “＋ Add me” to add your arrival, car and food needs.</div>` : "");
-  $("#crewList").querySelectorAll("[data-p]").forEach(b => b.onclick = () => openPerson(S.people.find(x=>x.id===b.dataset.p)));
+    <div class="body"><h3>${esc(p.name)}${p.name.toLowerCase()===meLc?' <span class="tag">you</span>':""}</h3>
+    <div class="meta">${a ? a + (a>1?" things":" thing") + " added" : "Nothing added yet"}</div></div></div>`;
+  }).join("") : `<div class="empty">Nobody yet. People appear here once they open the page and enter their name.</div>`;
 }
-let editingPerson = null;
-function openPerson(p){
-  if (!me) return $("#dName").showModal();
-  editingPerson = p; const f = $("#fPerson");
-  $("#peTitle").textContent = p ? p.name : "Your details";
-  f.name.value = p?.name || me; f.note.value = p?.note || "";
-  $("#peErr").textContent=""; $("#peDel").style.display = p ? "" : "none"; $("#peDel").dataset.armed=""; $("#peDel").textContent="Remove";
-  $("#dPerson").showModal();
-}
-$("#fPerson").addEventListener("submit", async e => {
-  e.preventDefault(); const f = e.target;
-  const row = { name:f.name.value.trim(), note:f.note.value.trim()||null };
-  const { error } = editingPerson ? await sb.from(T.people).update(row).eq("id", editingPerson.id) : await sb.from(T.people).insert(row);
-  if (error) { $("#peErr").textContent = /duplicate/.test(error.message) ? "That name is already listed. Edit it instead." : error.message; return; }
-  $("#dPerson").close(); toast("Saved"); load();
-});
-$("#peDel").onclick = async () => {
-  const b = $("#peDel");
-  if (!b.dataset.armed) { b.dataset.armed="1"; b.textContent="Tap again to remove"; return; }
-  const { error } = await sb.from(T.people).delete().eq("id", editingPerson.id);
-  if (error) { $("#peErr").textContent = error.message; return; }
-  $("#dPerson").close(); load();
-};
 
 // ---------- boot ----------
 const startTab = ["agenda","map","ideas","crew"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "agenda";
-load().then(() => { showTab(startTab); if (!me) $("#dName").showModal(); });
+load().then(() => { showTab(startTab); if (!me) $("#dName").showModal(); else registerMe(); });
 </script>
 </body>
 </html>
