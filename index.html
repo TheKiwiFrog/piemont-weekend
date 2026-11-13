@@ -606,7 +606,8 @@ function renderCrew(){
 // ---------- boot ----------
 const startTab = ["agenda","map","ideas","crew"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "agenda";
 showTab(startTab);
-load().then(() => { scrollCal(); if (!me) askName(); else registerMe(); });
+if (!me) askName();
+load().then(() => { scrollCal(); if (me) registerMe(); });
 setInterval(() => { if (tab === "agenda" && !document.hidden) renderCal(); }, 60000);
 </script>
 </body>
