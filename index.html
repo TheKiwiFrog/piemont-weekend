@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Weekend Piemonte · 27–29 Nov</title>
+<meta name="description" content="Our wine weekend in the Langhe — agenda, map and ideas. Anyone with the link can edit.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍷</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{
+  --bg:#f7f3ee; --card:#fff; --ink:#2a1f1d; --muted:#7a6a64; --line:#e8e0d8;
+  --wine:#7b1e3a; --wine-2:#a33a58; --wine-soft:#f5e6ea;
+  --visit:#7b1e3a; --meal:#c8742c; --drive:#6b7a8f; --other:#5e7d4e; --stay:#5e7d4e;
+  --hour:52px; --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--wine)}
+header{padding:22px 18px 10px;max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+h1{font-family:Fraunces,Georgia,serif;font-weight:700;font-size:28px;margin:0;letter-spacing:-.01em}
+h1 small{display:block;font:500 13px Inter,sans-serif;color:var(--muted);letter-spacing:0;margin-top:4px}
+.me{font-size:13px;color:var(--muted);white-space:nowrap}
+.me button{border:0;background:none;color:var(--wine);text-decoration:underline;padding:0}
+nav.tabs{position:sticky;top:0;z-index:500;background:var(--bg);border-bottom:1px solid var(--line)}
+nav.tabs .in{max-width:1100px;margin:0 auto;display:flex;gap:4px;padding:6px 12px;overflow-x:auto}
+nav.tabs button{border:0;background:none;padding:9px 14px;border-radius:999px;font-weight:600;color:var(--muted);white-space:nowrap}
+nav.tabs button.on{background:var(--wine);color:#fff}
+nav.tabs .badge{display:inline-block;min-width:18px;padding:0 5px;border-radius:9px;background:var(--wine-soft);color:var(--wine);font-size:11px;margin-left:4px}
+nav.tabs button.on .badge{background:rgba(255,255,255,.25);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:14px 12px 100px}
+section{display:none}
+section.on{display:block}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:2px 4px 12px;flex-wrap:wrap}
+.hint{color:var(--muted);font-size:13px}
+.btn{border:0;border-radius:999px;padding:10px 16px;font-weight:600;background:var(--wine);color:#fff}
+.btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.btn.small{padding:6px 12px;font-size:13px}
+.btn.danger{background:#fff;color:#b3261e;border:1px solid #f0c8c4}
+.fab{position:fixed;right:18px;bottom:22px;z-index:600;box-shadow:0 6px 20px rgba(123,30,58,.35);padding:14px 20px;font-size:15px}
+
+/* calendar */
+.days{display:flex;gap:6px;margin:0 4px 10px}
+.days button{flex:1;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:8px 4px;font-weight:600}
+.days button small{display:block;font-weight:500;color:var(--muted);font-size:12px}
+.days button.on{border-color:var(--wine);background:var(--wine-soft);color:var(--wine)}
+.cal{display:grid;grid-template-columns:44px 1fr;background:var(--card);border-radius:var(--radius);border:1px solid var(--line);overflow:hidden}
+.cal .hours{border-right:1px solid var(--line)}
+.cal .hours div{height:var(--hour);font-size:11px;color:var(--muted);text-align:right;padding:2px 6px 0 0}
+.cal .cols{display:grid;grid-template-columns:1fr}
+.cal .colhead{display:none}
+.col{position:relative;border-left:1px solid var(--line)}
+.col:first-child{border-left:0}
+.slot{height:var(--hour);border-top:1px dashed #efe8e1}
+.slot:first-child{border-top:0}
+.slot:hover{background:#fbf8f5}
+.ev{position:absolute;left:4px;right:4px;border-radius:10px;padding:6px 8px;color:#fff;overflow:hidden;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.08);font-size:13px;line-height:1.3;border:0;text-align:left}
+.ev b{display:block;font-weight:600}
+.ev span{opacity:.88;font-size:12px}
+.ev.visit{background:var(--visit)} .ev.meal{background:var(--meal)} .ev.drive{background:var(--drive)} .ev.other{background:var(--other)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:10px 4px 0}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+@media (min-width:760px){
+  .days{display:none}
+  .cal .cols{grid-template-columns:repeat(3,1fr)}
+  .cal{grid-template-columns:52px 1fr}
+  .colhead{display:block!important}
+  .colwrap{display:block!important}
+}
+.colwrap{display:none}
+.colwrap.on{display:block}
+.colhead{padding:10px;border-bottom:1px solid var(--line);font-weight:600;border-left:1px solid var(--line);background:#fcfaf8}
+.colwrap:first-child .colhead{border-left:0}
+.colhead small{color:var(--muted);font-weight:500;margin-left:4px}
+.cal .hours .sp{height:42px;display:none}
+@media (min-width:760px){ .cal .hours .sp{display:block} }
+
+/* map */
+#map{height:min(70vh,620px);border-radius:var(--radius);border:1px solid var(--line);z-index:1}
+.pin{width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:grid;place-items:center;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.pin span{transform:rotate(45deg);font-size:14px}
+.pin.winery{background:var(--wine)} .pin.restaurant{background:var(--meal)} .pin.stay,.pin.other{background:var(--stay)}
+.pin.planned{outline:3px solid #f2c14e}
+.leaflet-popup-content{margin:12px 14px;font:14px/1.4 Inter,sans-serif}
+.pop h3{font-family:Fraunces,serif;margin:0 0 2px;font-size:17px}
+.pop .meta{color:var(--muted);font-size:12px;margin-bottom:8px}
+.pop .acts{display:flex;gap:6px;flex-wrap:wrap}
+.placing{outline:3px dashed var(--wine)}
+
+/* ideas */
+.list{display:grid;gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;display:flex;gap:12px;align-items:flex-start}
+.card .ic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:18px;flex:none}
+.ic.winery{background:var(--wine-soft)} .ic.restaurant{background:#fbeee2} .ic.stay,.ic.other{background:#e9f0e4}
+.card .body{flex:1;min-width:0}
+.card h3{margin:0;font-size:15px}
+.card .meta{color:var(--muted);font-size:12.5px}
+.card .note{font-size:13.5px;margin-top:4px}
+.card .tags{margin-top:6px;display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:11.5px;padding:2px 8px;border-radius:999px;background:#f1ece6;color:var(--muted)}
+.tag.planned{background:#fdf3d8;color:#8a6510}
+.vote{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:6px 10px;font-weight:600;min-width:58px;text-align:center}
+.vote.on{background:var(--wine);border-color:var(--wine);color:#fff}
+.vote small{display:block;font-weight:500;font-size:11px;opacity:.8}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:5px 12px;font-size:13px}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+/* crew */
+.crew .card{align-items:center}
+.avatar{width:38px;height:38px;border-radius:50%;background:var(--wine-soft);color:var(--wine);display:grid;place-items:center;font-weight:700;flex:none}
+
+/* modal */
+dialog{border:0;border-radius:18px;padding:0;width:min(460px,94vw);box-shadow:0 20px 60px rgba(0,0,0,.25);color:var(--ink)}
+dialog::backdrop{background:rgba(42,31,29,.45)}
+dialog form{padding:20px}
+dialog h2{font-family:Fraunces,serif;margin:0 0 14px;font-size:21px}
+label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin:10px 0 4px}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff}
+textarea{min-height:64px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--wine-soft);border-color:var(--wine-2)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:10px}
+.actions{display:flex;justify-content:space-between;gap:8px;margin-top:18px;align-items:center}
+.actions .r{display:flex;gap:8px;margin-left:auto}
+.err{color:#b3261e;font-size:13px;margin-top:8px;min-height:1em}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;z-index:2000;transition:transform .25s}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.live{display:inline-block;width:8px;height:8px;border-radius:50%;background:#9aa;margin-right:6px;vertical-align:1px}
+.live.ok{background:#3aa65c}
+.empty{color:var(--muted);text-align:center;padding:30px 10px}
+.loading{color:var(--muted);text-align:center;padding:40px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Weekend Piemonte 🍷<small>Langhe · Fri 27 – Sun 29 Nov 2026 · Barolo, La Morra, Verduno</small></h1>
+  <div class="me"><span class="live" id="live"></span><span id="meName"></span> <button id="changeName" type="button">change</button></div>
+</header>
+<nav class="tabs"><div class="in">
+  <button data-tab="agenda" class="on">📅 Agenda</button>
+  <button data-tab="map">🗺️ Map</button>
+  <button data-tab="ideas">💡 Ideas <span class="badge" id="ideasCount">0</span></button>
+  <button data-tab="crew">👥 Crew</button>
+</div></nav>
+
+<main>
+  <section id="agenda" class="on">
+    <div class="bar"><span class="hint">Tap an empty slot to add something, tap an item to edit it.</span></div>
+    <div class="days" id="dayBtns"></div>
+    <div class="cal" id="cal"><div class="loading">Loading…</div></div>
+    <div class="legend">
+      <span><i style="background:var(--visit)"></i>Winery visit</span>
+      <span><i style="background:var(--meal)"></i>Meal</span>
+      <span><i style="background:var(--drive)"></i>Drive</span>
+      <span><i style="background:var(--other)"></i>Other</span>
+    </div>
+  </section>
+
+  <section id="map-sec">
+    <div class="bar">
+      <div class="filters" id="mapFilters"></div>
+      <span class="hint">Gold ring = already in the agenda</span>
+    </div>
+    <div id="map"></div>
+  </section>
+
+  <section id="ideas">
+    <div class="bar">
+      <div class="filters" id="ideaFilters"></div>
+      <span class="hint">👍 the ones you want to do</span>
+    </div>
+    <div class="list" id="ideaList"></div>
+  </section>
+
+  <section id="crew" class="crew">
+    <div class="bar"><span class="hint">Who's coming, arrival, car, who drives which day, food needs.</span></div>
+    <div class="list" id="crewList"></div>
+  </section>
+</main>
+
+<button class="btn fab" id="fab" type="button">＋ Add to agenda</button>
+
+<!-- name -->
+<dialog id="dName"><form method="dialog" id="fName">
+  <h2>Who are you? 👋</h2>
+  <p class="hint" style="margin-top:-6px">Just your first name, so the others know who added what. No account needed.</p>
+  <input id="nameInput" maxlength="40" required placeholder="e.g. Nico" autocomplete="given-name">
+  <div class="actions"><div class="r"><button class="btn" type="submit">Let's go</button></div></div>
+</form></dialog>
+
+<!-- event -->
+<dialog id="dEvent"><form method="dialog" id="fEvent">
+  <h2 id="evTitle">Add to agenda</h2>
+  <label>What</label>
+  <input name="title" maxlength="120" required placeholder="e.g. Tasting at Vietti">
+  <label>Place (optional)</label>
+  <select name="place_id"></select>
+  <div class="row3">
+    <div><label>Day</label><select name="day">
+      <option value="2026-11-27">Fri 27</option><option value="2026-11-28">Sat 28</option><option value="2026-11-29">Sun 29</option>
+    </select></div>
+    <div><label>From</label><input name="start_time" type="time" step="900" required></div>
+    <div><label>To</label><input name="end_time" type="time" step="900" required></div>
+  </div>
+  <label>Type</label>
+  <select name="kind"><option value="visit">Winery visit</option><option value="meal">Meal</option><option value="drive">Drive</option><option value="other">Other</option></select>
+  <label>Notes</label>
+  <textarea name="note" maxlength="500" placeholder="Booked? Price? Who confirmed?"></textarea>
+  <div class="hint" id="evMeta" style="margin-top:8px"></div>
+  <div class="err" id="evErr"></div>
+  <div class="actions">
+    <button class="btn danger small" type="button" id="evDel">Delete</button>
+    <div class="r"><button class="btn ghost" type="button" data-close>Cancel</button><button class="btn" type="submit">Save</button></div>
+  </div>
+</form></dialog>
+
+<!-- place -->
+<dialog id="dPlace"><form method="dialog" id="fPlace">
+  <h2 id="plTitle">Suggest a place</h2>
+  <label>Name</label>
+  <input name="name" maxlength="120" required placeholder="e.g. Vietti">
+  <div class="row">
+    <div><label>Type</label><select name="kind"><option value="winery">Winery</option><option value="restaurant">Restaurant</option><option value="stay">Stay</option><option value="other">Other</option></select></div>
+    <div><label>Town / address</label><input name="address" maxlength="200" placeholder="e.g. Castiglione Falletto"></div>
+  </div>
+  <label>Google Maps link (optional)</label>
+  <input name="maps_url" maxlength="500" placeholder="Paste a link from Google Maps">
+  <label>Why?</label>
+  <textarea name="note" maxlength="500" placeholder="Great Barolo, need to book, open Sundays…"></textarea>
+  <div class="hint" id="plMeta" style="margin-top:8px">We'll find it on the map automatically. If we can't, you'll be asked to tap where it is.</div>
+  <div class="err" id="plErr"></div>
+  <div class="actions">
+    <button class="btn danger small" type="button" id="plDel">Delete</button>
+    <div class="r"><button class="btn ghost" type="button" data-close>Cancel</button><button class="btn" type="submit" id="plSave">Save</button></div>
+  </div>
+</form></dialog>
+
+<!-- person -->
+<dialog id="dPerson"><form method="dialog" id="fPerson">
+  <h2 id="peTitle">Your details</h2>
+  <label>Name</label>
+  <input name="name" maxlength="40" required>
+  <label>Arrival · car · drives on · food needs</label>
+  <textarea name="note" maxlength="300" placeholder="Arriving Fri 12:30 with Julie's car, I drive Saturday, no shellfish"></textarea>
+  <div class="err" id="peErr"></div>
+  <div class="actions">
+    <button class="btn danger small" type="button" id="peDel">Remove</button>
+    <div class="r"><button class="btn ghost" type="button" data-close>Cancel</button><button class="btn" type="submit">Save</button></div>
+  </div>
+</form></dialog>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SB_URL = "https://wcdmadzjwatbasvpjfln.supabase.co";
+const SB_KEY = "sb_publishable_Sdftd9mp2t48WSgLf11r_g_ieQklybp";
+const sb = supabase.createClient(SB_URL, SB_KEY);
+const T = { places:"piemont_we_places", events:"piemont_we_events", votes:"piemont_we_votes", people:"piemont_we_people" };
+const DAYS = [["2026-11-27","Fri","27"],["2026-11-28","Sat","28"],["2026-11-29","Sun","29"]];
+const H0 = 8, H1 = 22; // calendar range
+const KIND_ICON = { winery:"🍇", restaurant:"🍝", stay:"🏡", other:"📍" };
+const KIND_LABEL = { winery:"Winery", restaurant:"Restaurant", stay:"Stay", other:"Other" };
+
+let S = { places:[], events:[], votes:[], people:[] };
+let me = null;
+try { me = localStorage.getItem("pwe_name"); } catch(e) {}
+let curDay = DAYS[0][0];
+let ideaFilter = "all", mapFilter = "all";
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const toMin = t => { const [h,m] = t.split(":").map(Number); return h*60+m; };
+const hhmm = t => t.slice(0,5);
+const toast = msg => { const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),2200); };
+const placeById = id => S.places.find(p => p.id === id);
+const votesFor = id => S.votes.filter(v => v.place_id === id);
+const gmaps = p => p.maps_url && /^https?:\/\//.test(p.maps_url) ? p.maps_url
+  : (p.lat!=null ? `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.name+" "+(p.address||"")+" Piemonte")}`);
+const dayLabel = d => { const x = DAYS.find(z=>z[0]===d); return x ? `${x[1]} ${x[2]}` : d; };
+
+// ---------- name ----------
+function setMe(n){ me = n.trim().slice(0,40); try{localStorage.setItem("pwe_name", me);}catch(e){} $("#meName").textContent = "You're " + me; }
+$("#fName").addEventListener("submit", e => { const v=$("#nameInput").value.trim(); if(!v){e.preventDefault();return;} setMe(v); });
+$("#changeName").onclick = () => { $("#nameInput").value = me||""; $("#dName").showModal(); };
+if (me) setMe(me);
+
+// ---------- tabs ----------
+let map, markers = [];
+document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => showTab(b.dataset.tab));
+function showTab(t){
+  document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab===t));
+  document.querySelectorAll("main section").forEach(s => s.classList.remove("on"));
+  (t==="map" ? $("#map-sec") : $("#"+t)).classList.add("on");
+  const fab = $("#fab");
+  fab.style.display = "";
+  if (t==="agenda") fab.textContent = "＋ Add to agenda";
+  else if (t==="map" || t==="ideas") fab.textContent = "＋ Suggest a place";
+  else fab.textContent = "＋ Add me";
+  fab.dataset.mode = t;
+  if (t==="map") { initMap(); setTimeout(()=>{ map.invalidateSize(); fitMap(); }, 50); }
+  if (location.hash.slice(1)!==t) history.replaceState(null,"","#"+t);
+}
+$("#fab").onclick = () => {
+  const m = $("#fab").dataset.mode || "agenda";
+  if (!me) return $("#dName").showModal();
+  if (m==="agenda") openEvent(null, { day: curDay, start_time:"10:00", end_time:"12:00" });
+  else if (m==="crew") openPerson(S.people.find(p=>p.name.toLowerCase()===me.toLowerCase()) || null);
+  else openPlace(null);
+};
+document.querySelectorAll("[data-close]").forEach(b => b.onclick = () => b.closest("dialog").close());
+
+// ---------- data ----------
+async function load(){
+  const [p,e,v,c] = await Promise.all([
+    sb.from(T.places).select("*").order("created_at"),
+    sb.from(T.events).select("*").order("day").order("start_time"),
+    sb.from(T.votes).select("*"),
+    sb.from(T.people).select("*").order("created_at"),
+  ]);
+  const err = p.error||e.error||v.error||c.error;
+  if (err) { $("#cal").innerHTML = `<div class="loading">Couldn't load: ${esc(err.message)}</div>`; return; }
+  S = { places:p.data, events:e.data, votes:v.data, people:c.data };
+  renderAll();
+}
+let reloadT;
+const reload = () => { clearTimeout(reloadT); reloadT = setTimeout(load, 150); };
+sb.channel("pwe").on("postgres_changes",{event:"*",schema:"public"}, payload => {
+  if (Object.values(T).includes(payload.table)) reload();
+}).subscribe(st => $("#live").classList.toggle("ok", st==="SUBSCRIBED"));
+document.addEventListener("visibilitychange", () => { if (!document.hidden) reload(); });
+
+function renderAll(){ renderCal(); renderIdeas(); renderCrew(); if (map) renderMarkers(); }
+
+// ---------- calendar ----------
+function renderCal(){
+  const db = $("#dayBtns");
+  db.innerHTML = DAYS.map(([d,w,n]) => {
+    const c = S.events.filter(e=>e.day===d).length;
+    return `<button data-d="${d}" class="${d===curDay?"on":""}">${w} ${n}<small>${c} planned</small></button>`;
+  }).join("");
+  db.querySelectorAll("button").forEach(b => b.onclick = () => { curDay = b.dataset.d; renderCal(); });
+
+  const hours = [];
+  for (let h=H0; h<H1; h++) hours.push(`<div>${String(h).padStart(2,"0")}:00</div>`);
+  const cols = DAYS.map(([d,w,n]) => {
+    const slots = []; for (let h=H0; h<H1; h++) slots.push(`<div class="slot" data-d="${d}" data-h="${h}"></div>`);
+    const evs = S.events.filter(e=>e.day===d).map(e => {
+      const s = Math.max(toMin(e.start_time), H0*60), en = Math.min(toMin(e.end_time), H1*60);
+      const top = (s - H0*60)/60, hgt = Math.max((en - s)/60, .5);
+      const p = e.place_id ? placeById(e.place_id) : null;
+      return `<button class="ev ${e.kind}" data-id="${e.id}" style="top:calc(${top} * var(--hour) + 2px);height:calc(${hgt} * var(--hour) - 4px)">
+        <b>${esc(e.title)}</b><span>${hhmm(e.start_time)}–${hhmm(e.end_time)}${p&&p.address?" · "+esc(p.address.split(",").pop().trim()):""}</span></button>`;
+    }).join("");
+    return `<div class="colwrap ${d===curDay?"on":""}"><div class="colhead">${w} ${n}<small>Nov</small></div><div class="col">${slots.join("")}${evs}</div></div>`;
+  }).join("");
+  $("#cal").innerHTML = `<div class="hours"><div class="sp"></div>${hours.join("")}</div><div class="cols">${cols}</div>`;
+  $("#cal").querySelectorAll(".slot").forEach(s => s.onclick = () => {
+    if (!me) return $("#dName").showModal();
+    const h = +s.dataset.h; openEvent(null, { day:s.dataset.d, start_time:`${String(h).padStart(2,"0")}:00`, end_time:`${String(Math.min(h+2,23)).padStart(2,"0")}:00` });
+  });
+  $("#cal").querySelectorAll(".ev").forEach(b => b.onclick = () => openEvent(S.events.find(e=>e.id===b.dataset.id)));
+}
+
+// ---------- event dialog ----------
+let editingEvent = null;
+function placeOptions(sel){
+  const sorted = [...S.places].sort((a,b)=>a.name.localeCompare(b.name));
+  return `<option value="">— none —</option>` + sorted.map(p => `<option value="${p.id}" ${p.id===sel?"selected":""}>${KIND_ICON[p.kind]} ${esc(p.name)}</option>`).join("");
+}
+function openEvent(ev, preset={}){
+  if (!me) return $("#dName").showModal();
+  editingEvent = ev;
+  const f = $("#fEvent"), v = ev || { title:"", kind:"visit", note:"", place_id:null, ...preset };
+  $("#evTitle").textContent = ev ? "Edit" : "Add to agenda";
+  f.title.value = v.title || ""; f.day.value = v.day; f.start_time.value = hhmm(v.start_time); f.end_time.value = hhmm(v.end_time);
+  f.kind.value = v.kind || "visit"; f.note.value = v.note || "";
+  f.place_id.innerHTML = placeOptions(v.place_id);
+  $("#evMeta").textContent = ev ? `Added by ${ev.added_by||"someone"}` : "";
+  $("#evErr").textContent = ""; $("#evDel").style.display = ev ? "" : "none"; $("#evDel").dataset.armed = "";
+  $("#evDel").textContent = "Delete";
+  $("#dEvent").showModal();
+}
+$("#fEvent").place_id.addEventListener("change", e => {
+  const f = $("#fEvent"), p = placeById(e.target.value);
+  if (p && !f.title.value.trim()) f.title.value = p.name;
+  if (p) f.kind.value = p.kind==="restaurant" ? "meal" : (p.kind==="winery" ? "visit" : f.kind.value);
+});
+$("#fEvent").addEventListener("submit", async e => {
+  e.preventDefault();
+  const f = e.target;
+  const row = { title:f.title.value.trim(), day:f.day.value, start_time:f.start_time.value, end_time:f.end_time.value,
+    kind:f.kind.value, note:f.note.value.trim()||null, place_id:f.place_id.value||null };
+  if (toMin(row.end_time) <= toMin(row.start_time)) { $("#evErr").textContent = "End time must be after start time."; return; }
+  const q = editingEvent
+    ? sb.from(T.events).update({ ...row, updated_at:new Date().toISOString() }).eq("id", editingEvent.id)
+    : sb.from(T.events).insert({ ...row, added_by:me });
+  const { error } = await q;
+  if (error) { $("#evErr").textContent = error.message; return; }
+  $("#dEvent").close(); toast(editingEvent ? "Updated" : "Added to the agenda"); curDay = row.day; load();
+});
+$("#evDel").onclick = async () => {
+  const b = $("#evDel");
+  if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = "Tap again to delete"; return; }
+  const { error } = await sb.from(T.events).delete().eq("id", editingEvent.id);
+  if (error) { $("#evErr").textContent = error.message; return; }
+  $("#dEvent").close(); toast("Deleted"); load();
+};
+
+// ---------- ideas ----------
+function filterBar(el, cur, onPick){
+  const opts = [["all","All"],["winery","🍇 Wineries"],["restaurant","🍝 Restaurants"],["stay","🏡 Stay"]];
+  el.innerHTML = opts.map(([k,l]) => `<button class="chip ${k===cur?"on":""}" data-k="${k}">${l}</button>`).join("");
+  el.querySelectorAll("button").forEach(b => b.onclick = () => onPick(b.dataset.k));
+}
+function plannedDays(id){ return [...new Set(S.events.filter(e=>e.place_id===id).map(e=>dayLabel(e.day)))]; }
+function renderIdeas(){
+  $("#ideasCount").textContent = S.places.length;
+  filterBar($("#ideaFilters"), ideaFilter, k => { ideaFilter = k; renderIdeas(); });
+  const list = S.places.filter(p => ideaFilter==="all" || p.kind===ideaFilter || (ideaFilter==="stay" && p.kind==="other"))
+    .map(p => ({ p, v:votesFor(p.id) }))
+    .sort((a,b) => b.v.length - a.v.length || a.p.name.localeCompare(b.p.name));
+  if (!list.length) { $("#ideaList").innerHTML = `<div class="empty">Nothing here yet. Suggest a place!</div>`; return; }
+  $("#ideaList").innerHTML = list.map(({p,v}) => {
+    const mine = me && v.some(x => x.voter.toLowerCase()===me.toLowerCase());
+    const pd = plannedDays(p.id);
+    return `<div class="card">
+      <div class="ic ${p.kind}">${KIND_ICON[p.kind]}</div>
+      <div class="body">
+        <h3>${esc(p.name)}</h3>
+        <div class="meta">${esc(p.address||KIND_LABEL[p.kind])} · added by ${esc(p.added_by||"?")}</div>
+        ${p.note?`<div class="note">${esc(p.note)}</div>`:""}
+        <div class="tags">
+          ${pd.length?`<span class="tag planned">📅 ${pd.join(", ")}</span>`:""}
+          ${v.length?`<span class="tag">👍 ${esc(v.map(x=>x.voter).join(", "))}</span>`:""}
+          <a class="tag" href="${esc(gmaps(p))}" target="_blank" rel="noopener">Google Maps ↗</a>
+          <button class="tag" style="border:0" data-plan="${p.id}">＋ agenda</button>
+          <button class="tag" style="border:0" data-edit="${p.id}">edit</button>
+        </div>
+      </div>
+      <button class="vote ${mine?"on":""}" data-vote="${p.id}">👍 ${v.length}<small>${mine?"you're in":"vote"}</small></button>
+    </div>`;
+  }).join("");
+  $("#ideaList").querySelectorAll("[data-vote]").forEach(b => b.onclick = () => toggleVote(b.dataset.vote));
+  $("#ideaList").querySelectorAll("[data-plan]").forEach(b => b.onclick = () => planPlace(b.dataset.plan));
+  $("#ideaList").querySelectorAll("[data-edit]").forEach(b => b.onclick = () => openPlace(placeById(b.dataset.edit)));
+}
+async function toggleVote(id){
+  if (!me) return $("#dName").showModal();
+  const mine = votesFor(id).find(x => x.voter.toLowerCase()===me.toLowerCase());
+  const { error } = mine
+    ? await sb.from(T.votes).delete().eq("place_id", id).eq("voter", mine.voter)
+    : await sb.from(T.votes).insert({ place_id:id, voter:me });
+  if (error) return toast(error.message);
+  load();
+}
+function planPlace(id){
+  const p = placeById(id);
+  openEvent(null, { title:p.name, place_id:id, kind:p.kind==="restaurant"?"meal":"visit", day:curDay,
+    start_time: p.kind==="restaurant" ? "12:30" : "15:00", end_time: p.kind==="restaurant" ? "14:30" : "16:30" });
+}
+
+// ---------- place dialog ----------
+let editingPlace = null, pendingPlace = null;
+function openPlace(p){
+  if (!me) return $("#dName").showModal();
+  editingPlace = p;
+  const f = $("#fPlace");
+  $("#plTitle").textContent = p ? "Edit place" : "Suggest a place";
+  f.name.value = p?.name||""; f.kind.value = p?.kind||"winery"; f.address.value = p?.address||""; f.maps_url.value = p?.maps_url||""; f.note.value = p?.note||"";
+  $("#plErr").textContent = ""; $("#plDel").style.display = p ? "" : "none"; $("#plDel").dataset.armed=""; $("#plDel").textContent="Delete";
+  $("#plMeta").textContent = p ? `Added by ${p.added_by||"someone"}` : "We'll find it on the map automatically. If we can't, you'll be asked to tap where it is.";
+  $("#dPlace").showModal();
+}
+function coordsFromUrl(u){
+  if (!u) return null;
+  let m = u.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/) || u.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || u.match(/[?&](?:q|query|ll)=(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
+  return m ? { lat:+m[1], lng:+m[2] } : null;
+}
+async function geocode(name, addr){
+  const tries = [`${name}, ${addr||""}, Piemonte, Italy`, `${addr||name}, Piemonte, Italy`];
+  for (const q of tries) {
+    try {
+      const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=it&viewbox=7.5,44.95,8.4,44.4&q=${encodeURIComponent(q)}`, { headers:{ "Accept-Language":"en" } });
+      const j = await r.json();
+      if (j[0]) return { lat:+j[0].lat, lng:+j[0].lon };
+    } catch(e) {}
+  }
+  return null;
+}
+$("#fPlace").addEventListener("submit", async e => {
+  e.preventDefault();
+  const f = e.target, btn = $("#plSave");
+  const row = { name:f.name.value.trim(), kind:f.kind.value, address:f.address.value.trim()||null, maps_url:f.maps_url.value.trim()||null, note:f.note.value.trim()||null };
+  btn.disabled = true; btn.textContent = "Saving…";
+  try {
+    let c = coordsFromUrl(row.maps_url);
+    const changedLoc = !editingPlace || editingPlace.address !== row.address || editingPlace.maps_url !== row.maps_url || editingPlace.name !== row.name;
+    if (!c && changedLoc) c = await geocode(row.name, row.address);
+    if (c) Object.assign(row, c);
+    if (editingPlace) {
+      const { error } = await sb.from(T.places).update(row).eq("id", editingPlace.id);
+      if (error) throw error;
+      $("#dPlace").close(); toast("Updated"); load();
+    } else {
+      if (!c) { pendingPlace = row; $("#dPlace").close(); startPlacing(); return; }
+      const { error } = await sb.from(T.places).insert({ ...row, added_by:me });
+      if (error) throw error;
+      $("#dPlace").close(); toast("Added — others can vote now"); load();
+    }
+  } catch(err) { $("#plErr").textContent = err.message || String(err); }
+  finally { btn.disabled = false; btn.textContent = "Save"; }
+});
+$("#plDel").onclick = async () => {
+  const b = $("#plDel");
+  if (!b.dataset.armed) { b.dataset.armed="1"; b.textContent = "Tap again to delete"; return; }
+  const { error } = await sb.from(T.places).delete().eq("id", editingPlace.id);
+  if (error) { $("#plErr").textContent = error.message; return; }
+  $("#dPlace").close(); toast("Deleted"); load();
+};
+function startPlacing(){
+  showTab("map");
+  toast("Couldn't find it. Tap the map where it is.");
+  $("#map").classList.add("placing");
+  map.once("click", async ev => {
+    $("#map").classList.remove("placing");
+    const { error } = await sb.from(T.places).insert({ ...pendingPlace, lat:ev.latlng.lat, lng:ev.latlng.lng, added_by:me });
+    pendingPlace = null;
+    if (error) return toast(error.message);
+    toast("Added — others can vote now"); load();
+  });
+}
+
+// ---------- map ----------
+function initMap(){
+  if (map) return;
+  map = L.map("map", { scrollWheelZoom:true }).setView([44.63, 7.95], 12);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom:19, attribution:"© OpenStreetMap" }).addTo(map);
+  renderMarkers();
+}
+function renderMarkers(){
+  filterBar($("#mapFilters"), mapFilter, k => { mapFilter = k; renderMarkers(); fitMap(); });
+  markers.forEach(m => m.remove()); markers = [];
+  S.places.filter(p => p.lat!=null && (mapFilter==="all" || p.kind===mapFilter || (mapFilter==="stay"&&p.kind==="other"))).forEach(p => {
+    const pd = plannedDays(p.id), v = votesFor(p.id);
+    const icon = L.divIcon({ className:"", html:`<div class="pin ${p.kind} ${pd.length?"planned":""}"><span>${KIND_ICON[p.kind]}</span></div>`, iconSize:[30,30], iconAnchor:[15,30], popupAnchor:[0,-28] });
+    const mine = me && v.some(x=>x.voter.toLowerCase()===me.toLowerCase());
+    const m = L.marker([p.lat,p.lng], { icon }).addTo(map).bindPopup(`<div class="pop">
+      <h3>${esc(p.name)}</h3>
+      <div class="meta">${esc(KIND_LABEL[p.kind])}${p.address?" · "+esc(p.address):""}</div>
+      ${p.note?`<div style="margin-bottom:8px">${esc(p.note)}</div>`:""}
+      ${pd.length?`<div class="meta">📅 In agenda: ${pd.join(", ")}</div>`:""}
+      <div class="acts">
+        <button class="btn small ${mine?"":"ghost"}" data-vote="${p.id}">👍 ${v.length}</button>
+        <button class="btn small ghost" data-plan="${p.id}">＋ Agenda</button>
+        <a class="btn small ghost" style="text-decoration:none" href="${esc(gmaps(p))}" target="_blank" rel="noopener">Maps ↗</a>
+      </div></div>`);
+    m.on("popupopen", ev => {
+      const el = ev.popup.getElement();
+      el.querySelector("[data-vote]").onclick = () => { toggleVote(p.id); map.closePopup(); };
+      el.querySelector("[data-plan]").onclick = () => { map.closePopup(); planPlace(p.id); };
+    });
+    markers.push(m);
+  });
+}
+function fitMap(){
+  if (!map || !markers.length) return;
+  const core = markers.filter(m => m.getLatLng().lat < 44.75); // the Barolo core; outliers (Asti side) still visible when filtering
+  const set = core.length >= 3 ? core : markers;
+  map.fitBounds(L.featureGroup(set).getBounds().pad(0.15));
+}
+
+// ---------- crew ----------
+function renderCrew(){
+  const meRow = me && S.people.find(p=>p.name.toLowerCase()===me.toLowerCase());
+  const list = S.people.map(p => `<div class="card">
+    <div class="avatar">${esc(p.name[0].toUpperCase())}</div>
+    <div class="body"><h3>${esc(p.name)}</h3><div class="meta">${esc(p.note||"No details yet")}</div></div>
+    <button class="btn small ghost" data-p="${p.id}">Edit</button></div>`).join("");
+  $("#crewList").innerHTML = (list || "") + (!meRow ? `<div class="empty">${S.people.length?"":"Nobody's listed yet. "}Tap “＋ Add me” to add your arrival, car and food needs.</div>` : "");
+  $("#crewList").querySelectorAll("[data-p]").forEach(b => b.onclick = () => openPerson(S.people.find(x=>x.id===b.dataset.p)));
+}
+let editingPerson = null;
+function openPerson(p){
+  if (!me) return $("#dName").showModal();
+  editingPerson = p; const f = $("#fPerson");
+  $("#peTitle").textContent = p ? p.name : "Your details";
+  f.name.value = p?.name || me; f.note.value = p?.note || "";
+  $("#peErr").textContent=""; $("#peDel").style.display = p ? "" : "none"; $("#peDel").dataset.armed=""; $("#peDel").textContent="Remove";
+  $("#dPerson").showModal();
+}
+$("#fPerson").addEventListener("submit", async e => {
+  e.preventDefault(); const f = e.target;
+  const row = { name:f.name.value.trim(), note:f.note.value.trim()||null };
+  const { error } = editingPerson ? await sb.from(T.people).update(row).eq("id", editingPerson.id) : await sb.from(T.people).insert(row);
+  if (error) { $("#peErr").textContent = /duplicate/.test(error.message) ? "That name is already listed. Edit it instead." : error.message; return; }
+  $("#dPerson").close(); toast("Saved"); load();
+});
+$("#peDel").onclick = async () => {
+  const b = $("#peDel");
+  if (!b.dataset.armed) { b.dataset.armed="1"; b.textContent="Tap again to remove"; return; }
+  const { error } = await sb.from(T.people).delete().eq("id", editingPerson.id);
+  if (error) { $("#peErr").textContent = error.message; return; }
+  $("#dPerson").close(); load();
+};
+
+// ---------- boot ----------
+const startTab = ["agenda","map","ideas","crew"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "agenda";
+load().then(() => { showTab(startTab); if (!me) $("#dName").showModal(); });
+</script>
+</body>
+</html>
