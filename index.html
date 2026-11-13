@@ -68,7 +68,7 @@ main{flex:1;min-height:0;position:relative}
 .hrs div{font-size:10.5px;color:var(--muted);text-align:right;padding-right:7px;transform:translateY(-6px);font-variant-numeric:tabular-nums}
 .hrs div:first-child{visibility:hidden}
 .col{position:relative;border-left:.5px solid var(--line)}
-.ev{position:absolute;border:0;border-left:3px solid;border-radius:5px;padding:4px 6px;text-align:left;font-size:11.5px;line-height:1.25;overflow:hidden;cursor:pointer}
+.ev{position:absolute;display:flex;flex-direction:column;justify-content:flex-start;border:0;border-left:3px solid;border-radius:5px;padding:4px 6px;text-align:left;font-size:11.5px;line-height:1.25;overflow:hidden;cursor:pointer}
 .ev b{font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .ev span{display:block;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ev.visit{background:#f1dde1;border-color:var(--wine);color:#5a1322}
@@ -434,15 +434,15 @@ function openPlace(p){
     ? pl.map(e => `<div class="status"><i class="ti ti-calendar-check"></i>In the agenda · ${day(e.day).it} ${hhmm(e.start_time)}</div>`).join("")
     : `<div style="margin-top:14px"><button class="btn ghost" id="plPlan"><i class="ti ti-calendar-plus"></i>Add to agenda</button></div>`;
   openSheet(`<div class="sh-ey"><span>${PK[p.kind].l.toUpperCase()}${town(p) ? " · "+esc(town(p).toUpperCase()) : ""}</span><button class="link" id="plEdit">Edit</button></div>
-    <div class="sh-tr"><div class="sh-t">${esc(p.name)}</div><button class="heart ${my?"on":""}" id="plVote"><i class="ti ti-heart"></i>${v.length}</button></div>
+    <div class="sh-t">${esc(p.name)}</div>
     <div class="sh-m">${esc(p.address || "")}</div>
     ${status}
-    ${actsHtml(p, `<button class="act ${my?"on":""}" id="plVote2"><i class="ti ti-heart"></i>${my ? "Voted" : "Vote"}</button>`)}
+    ${actsHtml(p, `<button class="act ${my?"on":""}" id="plVote"><i class="ti ti-heart"></i>${my ? "Voted" : "Vote"}${v.length ? " · "+v.length : ""}</button>`)}
     ${p.note ? `<div class="kv"><span>Why</span>${esc(p.note)}</div>` : ""}
     ${v.length ? `<div class="kv"><span>Votes</span>${esc(v.map(x => x.voter).join(", "))}</div>` : ""}
     <div class="kv" style="color:var(--muted);font-size:12.5px">Added by ${esc(p.added_by||"someone")}</div>`, { type:"place", id:p.id });
   $("#plEdit").onclick = () => openPlaceForm(p);
-  $("#plVote").onclick = $("#plVote2").onclick = () => toggleVote(p.id);
+  $("#plVote").onclick = () => toggleVote(p.id);
   if (!pl.length) $("#plPlan").onclick = () => planPlace(p.id);
 }
 async function toggleVote(id){
