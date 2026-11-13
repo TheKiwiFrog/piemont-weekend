@@ -80,7 +80,7 @@ main{flex:1;min-height:0;position:relative}
 
 /* map */
 #map{position:absolute;inset:0;background:#efe9df;z-index:1}
-.leaflet-tile-pane{filter:sepia(.2) saturate(.85) brightness(1.02)}
+.leaflet-tile-pane{filter:grayscale(.6) sepia(.28) brightness(1.04) contrast(.92)}
 .leaflet-control-attribution{font-size:9px;background:rgba(255,253,249,.7)!important}
 .chips{position:absolute;top:calc(12px + var(--sat));left:12px;right:12px;z-index:500;display:flex;gap:6px;align-items:center}
 .chip{border:0;background:var(--card);box-shadow:0 0 0 .5px var(--line2),0 2px 8px rgba(33,26,23,.08);border-radius:999px;padding:8px 13px;font-size:13px;white-space:nowrap}
@@ -525,8 +525,8 @@ let map, cluster, markers = {}, activeId = null;
 function initMap(){
   if (map) return;
   map = L.map("map", { zoomControl:false, attributionControl:true }).setView([44.63, 7.95], 12);
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", { maxZoom:19, subdomains:"abcd",
-    attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>' }).addTo(map);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom:19,
+    attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(map);
   cluster = L.markerClusterGroup({ showCoverageOnHover:false, maxClusterRadius:34, spiderfyOnMaxZoom:true,
     iconCreateFunction: c => L.divIcon({ className:"", html:`<div class="clu">${c.getChildCount()}</div>`, iconSize:[28,28] }) });
   map.addLayer(cluster);
