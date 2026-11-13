@@ -295,13 +295,13 @@ function openSheet(html, state){
   wrap.classList.add("open");
 }
 function closeSheet(){ wrap.classList.remove("open"); sheetState = null; }
-$("#scrim").onclick = closeSheet;
-document.addEventListener("keydown", e => { if (e.key === "Escape" && sheetState) closeSheet(); });
+$("#scrim").onclick = () => { if (!sheetState?.locked) closeSheet(); };
+document.addEventListener("keydown", e => { if (e.key === "Escape" && sheetState && !sheetState.locked) closeSheet(); });
 (() => { // drag down to close
   let y0 = null, dy = 0;
   sheet.addEventListener("touchstart", e => { if (sheet.scrollTop <= 0 && !e.target.closest("input,textarea,select")) { y0 = e.touches[0].clientY; dy = 0; sheet.style.transition = "none"; } }, { passive:true });
   sheet.addEventListener("touchmove", e => { if (y0 == null) return; dy = e.touches[0].clientY - y0; if (dy > 0) sheet.style.transform = `translateY(${dy}px)`; }, { passive:true });
-  sheet.addEventListener("touchend", () => { if (y0 == null) return; sheet.style.transition = ""; sheet.style.transform = ""; if (dy > 90) closeSheet(); y0 = null; });
+  sheet.addEventListener("touchend", () => { if (y0 == null) return; sheet.style.transition = ""; sheet.style.transform = ""; if (dy > 90 && !sheetState?.locked) closeSheet(); y0 = null; });
 })();
 function refreshSheet(){
   const s = sheetState; if (!s) return;
@@ -323,7 +323,7 @@ function askName(){
     <div class="sh-t">Who are you?</div>
     <div class="sh-m">Your first name, so the others see who added what. No account needed.</div>
     <label>First name</label><input name="n" maxlength="40" required placeholder="Giulia" autocomplete="given-name" value="${esc(me||"")}">
-    <div class="f-acts"><button class="btn" type="submit">Continue</button></div></form>`, { form:true });
+    <div class="f-acts"><button class="btn" type="submit">Continue</button></div></form>`, { form:true, locked:!me });
   const f = $("#fName");
   setTimeout(() => f.n.focus(), 350);
   f.onsubmit = e => { e.preventDefault(); const v = f.n.value.trim(); if (!v) return; const old = me; setMe(v); closeSheet(); registerMe(old); renderAll(); };
@@ -381,7 +381,7 @@ function openEvent(ev){
     ${actsHtml(p)}
     ${ev.note ? `<div class="kv"><span>Notes</span>${esc(ev.note)}</div>` : ""}
     ${p && p.address ? `<div class="kv"><span>Address</span>${esc(p.address)}</div>` : ""}
-    <div class="kv" style="color:var(--muted);font-size:12.5px">Added by ${esc(ev.added_by||"someone")}</div>`, { type:"event", id:ev.id });
+    <div class="kv" style="color:var(--muted);font-size:12.5px">Added by ${esc(ev.added_by||"someone")}${ev.updated_by && ev.updated_by !== ev.added_by ? ` · edited by ${esc(ev.updated_by)}` : ""}</div>`, { type:"event", id:ev.id });
   $("#evEdit").onclick = () => openEventForm(ev);
 }
 
@@ -413,7 +413,7 @@ function openEventForm(ev, preset = {}){
     if (!row.title) return $("#evErr").textContent = "Give it a name.";
     if (toMin(row.end_time) <= toMin(row.start_time)) return $("#evErr").textContent = "End time must be after start time.";
     const { data, error } = ev
-      ? await sb.from(T.events).update({ ...row, updated_at:new Date().toISOString() }).eq("id", ev.id).select().single()
+      ? await sb.from(T.events).update({ ...row, updated_at:new Date().toISOString(), updated_by:me }).eq("id", ev.id).select().single()
       : await sb.from(T.events).insert({ ...row, added_by:me }).select().single();
     if (error) return $("#evErr").textContent = error.message;
     const i = S.events.findIndex(x => x.id === data.id); i >= 0 ? S.events[i] = data : S.events.push(data);
@@ -440,7 +440,7 @@ function openPlace(p){
     ${actsHtml(p, `<button class="act ${my?"on":""}" id="plVote"><i class="ti ti-heart"></i>${my ? "Voted" : "Vote"}${v.length ? " · "+v.length : ""}</button>`)}
     ${p.note ? `<div class="kv"><span>Why</span>${esc(p.note)}</div>` : ""}
     ${v.length ? `<div class="kv"><span>Votes</span>${esc(v.map(x => x.voter).join(", "))}</div>` : ""}
-    <div class="kv" style="color:var(--muted);font-size:12.5px">Added by ${esc(p.added_by||"someone")}</div>`, { type:"place", id:p.id });
+    <div class="kv" style="color:var(--muted);font-size:12.5px">Added by ${esc(p.added_by||"someone")}${p.updated_by && p.updated_by !== p.added_by ? ` · edited by ${esc(p.updated_by)}` : ""}</div>`, { type:"place", id:p.id });
   $("#plEdit").onclick = () => openPlaceForm(p);
   $("#plVote").onclick = () => toggleVote(p.id);
   if (!pl.length) $("#plPlan").onclick = () => planPlace(p.id);
@@ -492,7 +492,7 @@ function openPlaceForm(p){
       if (!c && moved) c = await geocode(row.name, row.address);
       if (c) Object.assign(row, c);
       if (p) {
-        const { data, error } = await sb.from(T.places).update(row).eq("id", p.id).select().single(); if (error) throw error;
+        const { data, error } = await sb.from(T.places).update({ ...row, updated_by:me }).eq("id", p.id).select().single(); if (error) throw error;
         S.places = S.places.map(x => x.id === data.id ? data : x); renderAll(); openPlace(data); toast("Saved");
       } else if (!c) {
         closeSheet(); startPlacing(row);
