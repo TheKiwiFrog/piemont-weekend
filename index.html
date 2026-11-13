@@ -2,339 +2,235 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Weekend Piemonte · 27–29 Nov</title>
-<meta name="description" content="Our wine weekend in the Langhe — agenda, map and ideas. Anyone with the link can edit.">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍷</text></svg>">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Weekend in Piemonte</title>
+<meta name="description" content="Our wine weekend in the Langhe, 27–29 Nov 2026. Anyone with the link can add and edit.">
+<meta name="theme-color" content="#f5f0e8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Piemonte">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
 <style>
 :root{
-  --bg:#f7f3ee; --card:#fff; --ink:#2a1f1d; --muted:#7a6a64; --line:#e8e0d8;
-  --wine:#7b1e3a; --wine-2:#a33a58; --wine-soft:#f5e6ea;
-  --visit:#7b1e3a; --meal:#c8742c; --drive:#6b7a8f; --other:#5e7d4e; --stay:#5e7d4e;
-  --hour:52px; --radius:14px;
+  --paper:#f5f0e8; --card:#fffdf9; --ink:#211a17; --muted:#8c8178; --line:#ece4d8; --line2:#d9cfc1;
+  --wine:#7a1c2e; --terra:#a5582a; --slate:#6f7782; --sage:#5f7350; --ring:#c0392b;
+  --serif:'Libre Caslon Text',Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
 }
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);font:15px/1.4 var(--sans);-webkit-font-smoothing:antialiased;overflow:hidden;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 a{color:var(--wine)}
-header{padding:22px 18px 10px;max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
-h1{font-family:Fraunces,Georgia,serif;font-weight:700;font-size:clamp(20px,6vw,28px);margin:0;letter-spacing:-.01em;white-space:nowrap}
-h1 small{display:block;font:500 13px Inter,sans-serif;color:var(--muted);letter-spacing:0;margin-top:4px;white-space:normal}
-.me{font-size:13px;color:var(--muted);white-space:nowrap}
-.me button{border:0;background:none;color:var(--wine);text-decoration:underline;padding:0}
-nav.tabs{position:sticky;top:0;z-index:500;background:var(--bg);border-bottom:1px solid var(--line)}
-nav.tabs .in{max-width:1100px;margin:0 auto;display:flex;gap:4px;padding:6px 12px;overflow:hidden}
-nav.tabs button{border:0;background:none;padding:9px 14px;border-radius:999px;font-weight:600;color:var(--muted);white-space:nowrap;min-width:0}
-nav.tabs button.on{background:var(--wine);color:#fff}
-nav.tabs .badge{display:inline-block;min-width:18px;padding:0 5px;border-radius:9px;background:var(--wine-soft);color:var(--wine);font-size:11px;margin-left:4px}
-nav.tabs button.on .badge{background:rgba(255,255,255,.25);color:#fff}
-main{max-width:1100px;margin:0 auto;padding:14px 12px 100px}
-section{display:none}
-section.on{display:block}
-.bar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:2px 4px 12px;flex-wrap:wrap}
-.hint{color:var(--muted);font-size:13px}
-.btn{border:0;border-radius:999px;padding:10px 16px;font-weight:600;background:var(--wine);color:#fff}
-.btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)}
-.btn.small{padding:6px 12px;font-size:13px}
-.btn.danger{background:#fff;color:#b3261e;border:1px solid #f0c8c4}
-.fab{position:fixed;right:18px;bottom:22px;z-index:600;box-shadow:0 6px 20px rgba(123,30,58,.35);padding:14px 20px;font-size:15px}
 
-/* calendar */
-.days{display:flex;gap:6px;margin:0 4px 10px}
-.days button{flex:1;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:8px 4px;font-weight:600}
-.days button small{display:block;font-weight:500;color:var(--muted);font-size:12px}
-.days button.on{border-color:var(--wine);background:var(--wine-soft);color:var(--wine)}
-.cal{display:grid;grid-template-columns:44px 1fr;background:var(--card);border-radius:var(--radius);border:1px solid var(--line);overflow:hidden}
-.cal .hours{border-right:1px solid var(--line)}
-.cal .hours div{height:var(--hour);font-size:11px;color:var(--muted);text-align:right;padding:2px 6px 0 0}
-.cal .cols{display:grid;grid-template-columns:1fr}
-.cal .colhead{display:none}
-.col{position:relative;border-left:1px solid var(--line)}
-.col:first-child{border-left:0}
-.slot{height:var(--hour);border-top:1px dashed #efe8e1}
-.slot:first-child{border-top:0}
-.slot:hover{background:#fbf8f5}
-.ev{position:absolute;left:4px;right:4px;display:flex;flex-direction:column;justify-content:flex-start;border-radius:10px;padding:6px 8px;color:#fff;overflow:hidden;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.08);font-size:13px;line-height:1.3;border:0;text-align:left}
-.ev b{display:block;font-weight:600}
-.ev span{opacity:.88;font-size:12px}
-.ev.visit{background:var(--visit)} .ev.meal{background:var(--meal)} .ev.drive{background:var(--drive)} .ev.other{background:var(--other)}
-.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:10px 4px 0}
-.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
-@media (min-width:760px){
-  .days{display:none}
-  .cal .cols{grid-template-columns:repeat(3,1fr)}
-  .cal{grid-template-columns:52px 1fr}
-  .colhead{display:block!important}
-  .colwrap{display:block!important}
+#app{height:100vh;height:100dvh;display:flex;flex-direction:column;max-width:1100px;margin:0 auto}
+.top{flex:none;padding:calc(14px + var(--sat)) 16px 10px;display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.eyebrow{font-size:11px;letter-spacing:.14em;color:var(--wine);font-weight:500}
+h1{font:400 26px/1.1 var(--serif);margin:3px 0 0;white-space:nowrap}
+.top-r{display:flex;align-items:center;gap:10px}
+.avatars{display:flex}
+.av{width:26px;height:26px;border-radius:50%;color:#fffdf9;font-size:11px;font-weight:600;display:grid;place-items:center;border:2px solid var(--paper);margin-left:-8px;flex:none}
+.avatars .av:first-child{margin-left:0}
+.plus{width:34px;height:34px;border-radius:50%;border:0;background:var(--wine);color:#fffdf9;display:grid;place-items:center;font-size:19px;flex:none}
+.plus:active,.chip:active,.act:active,.btn:active,.heart:active,.pc:active{transform:scale(.96)}
+main{flex:1;min-height:0;position:relative}
+.screen{position:absolute;inset:0;display:none}
+.screen.on{display:block}
+.scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:2px 14px 28px}
+.tabbar{flex:none;display:grid;grid-template-columns:repeat(4,1fr);border-top:.5px solid var(--line2);background:rgba(251,248,243,.94);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);padding:7px 0 calc(7px + var(--sab));z-index:900}
+.tabbar button{border:0;background:none;color:var(--muted);font-size:10.5px;display:flex;flex-direction:column;align-items:center;gap:1px;padding:2px 0}
+.tabbar i{font-size:24px}
+.tabbar button.on{color:var(--wine)}
+@media (min-width:900px){
+  .tabbar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);width:400px;border:.5px solid var(--line2);border-radius:22px;padding:8px 0;box-shadow:0 10px 34px rgba(33,26,23,.14)}
+  main{margin-bottom:96px}
 }
-.colwrap{display:none}
-.colwrap.on{display:block}
-.colhead{padding:10px;border-bottom:1px solid var(--line);font-weight:600;border-left:1px solid var(--line);background:#fcfaf8}
-.colwrap:first-child .colhead{border-left:0}
-.colhead small{color:var(--muted);font-weight:500;margin-left:4px}
-.cal .hours .sp{height:42px;display:none}
-@media (min-width:760px){ .cal .hours .sp{display:block} }
+
+/* agenda */
+.cal{height:100%;display:flex;flex-direction:column}
+.cal-head{flex:none;display:grid;grid-template-columns:40px repeat(3,1fr);border-bottom:.5px solid var(--line2);padding:0 6px 7px}
+.dh{text-align:center;font-size:11px;color:var(--muted);letter-spacing:.08em}
+.dh b{display:grid;place-items:center;width:28px;height:28px;margin:2px auto 0;border-radius:50%;font-size:16px;font-weight:600;color:var(--ink);letter-spacing:0}
+.dh.today b{background:var(--wine);color:#fffdf9}
+.dh .full{display:none}
+@media (min-width:700px){ .dh .short{display:none} .dh .full{display:inline;font:italic 15px var(--serif);letter-spacing:0;color:var(--ink)} .dh b{display:inline-grid;margin:0 0 0 6px;vertical-align:middle} }
+.cal-body{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:40px repeat(3,1fr);padding:0 6px 24px;-webkit-overflow-scrolling:touch}
+.hrs div{font-size:10.5px;color:var(--muted);text-align:right;padding-right:7px;transform:translateY(-6px);font-variant-numeric:tabular-nums}
+.hrs div:first-child{visibility:hidden}
+.col{position:relative;border-left:.5px solid var(--line)}
+.ev{position:absolute;border:0;border-left:3px solid;border-radius:5px;padding:4px 6px;text-align:left;font-size:11.5px;line-height:1.25;overflow:hidden;cursor:pointer}
+.ev b{font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ev span{display:block;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev.visit{background:#f1dde1;border-color:var(--wine);color:#5a1322}
+.ev.meal{background:#f4e3d6;border-color:var(--terra);color:#6b3415}
+.ev.drive{background:#e7e9ec;border-color:var(--slate);color:#3d434b}
+.ev.other{background:#e4eadf;border-color:var(--sage);color:#33432a}
+.now{position:absolute;left:-4px;right:0;height:2px;background:var(--ring);z-index:5;pointer-events:none}
+.now:before{content:"";position:absolute;left:-3px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--ring)}
 
 /* map */
-#map{height:min(70vh,620px);border-radius:var(--radius);border:1px solid var(--line);z-index:1}
-.pin{width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:grid;place-items:center;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)}
-.pin span{transform:rotate(45deg);font-size:14px}
-.pin.winery{background:var(--wine)} .pin.restaurant{background:var(--meal)} .pin.stay,.pin.other{background:var(--stay)}
-.pin.planned{outline:3px solid #e0322b;outline-offset:2px}
-.leaflet-popup-content{margin:12px 14px;font:14px/1.4 Inter,sans-serif}
-.pop h3{font-family:Fraunces,serif;margin:0 0 2px;font-size:17px}
-.pop .meta{color:var(--muted);font-size:12px;margin-bottom:8px}
-.pop .acts{display:flex;gap:6px;flex-wrap:wrap}
-.placing{outline:3px dashed var(--wine)}
+#map{position:absolute;inset:0;background:#efe9df;z-index:1}
+.leaflet-tile-pane{filter:sepia(.2) saturate(.85) brightness(1.02)}
+.leaflet-control-attribution{font-size:9px;background:rgba(255,253,249,.7)!important}
+.chips{position:absolute;top:calc(12px + var(--sat));left:12px;right:12px;z-index:500;display:flex;gap:6px;align-items:center}
+.chip{border:0;background:var(--card);box-shadow:0 0 0 .5px var(--line2),0 2px 8px rgba(33,26,23,.08);border-radius:999px;padding:8px 13px;font-size:13px;white-space:nowrap}
+.chip.on{background:var(--ink);color:#fffdf9}
+.chips .plus{margin-left:auto;box-shadow:0 2px 8px rgba(33,26,23,.15)}
+.strip{position:absolute;left:0;right:0;bottom:14px;z-index:500;display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 14px;scrollbar-width:none}
+.strip::-webkit-scrollbar{display:none}
+.pc{flex:0 0 min(240px,72vw);scroll-snap-align:center;background:var(--card);border-radius:16px;padding:11px 13px;box-shadow:0 0 0 .5px var(--line2),0 6px 20px rgba(33,26,23,.10);text-align:left;border:0}
+.pc.active{box-shadow:0 0 0 1.5px var(--wine),0 6px 20px rgba(33,26,23,.12)}
+.ey{font-size:10.5px;letter-spacing:.12em;color:var(--wine);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc h3{font:400 18px/1.2 var(--serif);margin:3px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc .m{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.pin{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:#fffdf9;border:2px solid #fffdf9;box-shadow:0 2px 6px rgba(0,0,0,.25);font-size:14px;transition:transform .15s}
+.pin.winery{background:var(--wine)} .pin.restaurant{background:var(--terra)} .pin.stay,.pin.other{background:var(--sage)}
+.pin.planned{box-shadow:0 0 0 2.5px var(--ring),0 2px 6px rgba(0,0,0,.25)}
+.pin.sel{transform:scale(1.3)}
+.clu{min-width:28px;height:28px;border-radius:14px;background:var(--ink);color:#fffdf9;border:2px solid #fffdf9;display:grid;place-items:center;font-size:12px;font-weight:600;padding:0 5px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.placing #map{outline:3px dashed var(--wine);outline-offset:-3px}
 
-/* ideas */
-.list{display:grid;gap:10px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;display:flex;gap:12px;align-items:flex-start}
-.card .ic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:18px;flex:none}
-.ic.winery{background:var(--wine-soft)} .ic.restaurant{background:#fbeee2} .ic.stay,.ic.other{background:#e9f0e4}
-.card .body{flex:1;min-width:0}
-.card h3{margin:0;font-size:15px}
-.card .meta{color:var(--muted);font-size:12.5px}
-.card .note{font-size:13.5px;margin-top:4px}
-.card .tags{margin-top:6px;display:flex;gap:6px;flex-wrap:wrap}
-.tag{font-size:11.5px;padding:2px 8px;border-radius:999px;background:#f1ece6;color:var(--muted)}
-.tag.planned{background:#fde4e2;color:#b3261e}
-.vote{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:6px 10px;font-weight:600;min-width:58px;text-align:center}
-.vote.on{background:var(--wine);border-color:var(--wine);color:#fff}
-.vote small{display:block;font-weight:500;font-size:11px;opacity:.8}
-.filters{display:flex;gap:6px;flex-wrap:wrap}
-.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:5px 12px;font-size:13px}
-.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+/* lists */
+.sec{font-size:11px;letter-spacing:.12em;color:var(--muted);margin:18px 4px 8px;font-weight:500}
+.group{background:var(--card);border-radius:14px;box-shadow:0 0 0 .5px var(--line2);overflow:hidden}
+.row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:.5px solid var(--line);cursor:pointer}
+.row:last-child{border-bottom:0}
+.row:active{background:#faf6f0}
+.row .b{flex:1;min-width:0}
+.row .t{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .m{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.red{color:var(--wine);text-decoration:none}
+.heart{border:0;box-shadow:0 0 0 .5px var(--line2);background:var(--card);border-radius:999px;padding:6px 11px;font-size:12.5px;display:flex;gap:4px;align-items:center;flex:none}
+.heart.on{background:var(--wine);color:#fffdf9;box-shadow:none}
+.heart i{font-size:14px}
+.empty{color:var(--muted);text-align:center;padding:36px 16px;font-size:14px}
+.tip{margin-top:22px;background:var(--card);border-radius:14px;box-shadow:0 0 0 .5px var(--line2);padding:14px;font-size:13.5px;color:var(--muted);display:flex;gap:10px}
+.tip i{font-size:20px;color:var(--wine)}
+.tip b{color:var(--ink);font-weight:600}
+.you{font-size:11px;font-weight:500;background:var(--paper);color:var(--muted);border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:1px}
 
-/* crew */
-.crew .card{align-items:center}
-.avatar{width:38px;height:38px;border-radius:50%;background:var(--wine-soft);color:var(--wine);display:grid;place-items:center;font-weight:700;flex:none}
-
-/* modal */
-dialog{border:0;border-radius:18px;padding:0;width:min(460px,94vw);box-shadow:0 20px 60px rgba(0,0,0,.25);color:var(--ink)}
-dialog::backdrop{background:rgba(42,31,29,.45)}
-dialog form{padding:20px}
-dialog h2{font-family:Fraunces,serif;margin:0 0 14px;font-size:21px}
-label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin:10px 0 4px}
-input,select,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff}
-textarea{min-height:64px;resize:vertical}
-input:focus,select:focus,textarea:focus{outline:2px solid var(--wine-soft);border-color:var(--wine-2)}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.row3{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:10px}
-.actions{display:flex;justify-content:space-between;gap:8px;margin-top:18px;align-items:center}
-.actions .r{display:flex;gap:8px;margin-left:auto}
-.err{color:#b3261e;font-size:13px;margin-top:8px;min-height:1em}
-.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;z-index:2000;transition:transform .25s}
-.toast.show{transform:translateX(-50%) translateY(0)}
-.live{display:inline-block;width:8px;height:8px;border-radius:50%;background:#9aa;margin-right:6px;vertical-align:1px}
-.live.ok{background:#3aa65c}
-.empty{color:var(--muted);text-align:center;padding:30px 10px}
+/* sheet */
+.sheet-wrap{position:fixed;inset:0;z-index:2000;pointer-events:none}
+.scrim{position:absolute;inset:0;background:rgba(33,26,23,.38);opacity:0;transition:opacity .25s}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:90vh;max-height:90dvh;overflow-y:auto;background:var(--card);border-radius:20px 20px 0 0;padding:8px 18px calc(22px + var(--sab));transform:translateY(105%);transition:transform .34s cubic-bezier(.2,.85,.25,1);box-shadow:0 -10px 40px rgba(33,26,23,.15);-webkit-overflow-scrolling:touch}
+.sheet-wrap.open{pointer-events:auto}
+.sheet-wrap.open .scrim{opacity:1}
+.sheet-wrap.open .sheet{transform:none}
+@media (min-width:700px){
+  .sheet{left:50%;right:auto;width:460px;margin-left:-230px;bottom:auto;top:50%;border-radius:20px;transform:translateY(-46%);opacity:0;transition:transform .25s,opacity .2s;padding-bottom:22px}
+  .sheet-wrap.open .sheet{transform:translateY(-50%);opacity:1}
+  .grab{visibility:hidden}
+}
+.grab{width:36px;height:5px;border-radius:3px;background:var(--line2);margin:0 auto 14px}
+.sh-ey{font-size:11px;letter-spacing:.12em;color:var(--wine);font-weight:500;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.link{border:0;background:none;color:var(--wine);font-size:15px;letter-spacing:0;font-weight:500;padding:0}
+.sh-t{font:400 25px/1.15 var(--serif);margin:6px 0 3px}
+.sh-tr{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.sh-m{font-size:13.5px;color:var(--muted)}
+.acts{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px;margin:16px 0 4px}
+.act{background:var(--paper);border-radius:13px;padding:10px 0 8px;text-align:center;font-size:11.5px;color:var(--wine);text-decoration:none;border:0;display:flex;flex-direction:column;align-items:center;gap:3px}
+.act i{font-size:21px}
+.act.on{background:var(--wine);color:#fffdf9}
+.kv{border-top:.5px solid var(--line);padding:12px 0 0;margin-top:12px;font-size:14px;white-space:pre-wrap}
+.kv span{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}
+.status{border-radius:11px;padding:9px 11px;font-size:13px;margin-top:14px;display:flex;align-items:center;gap:7px;background:#f1dde1;color:#5a1322}
+.status i{font-size:16px}
+.btn{border:0;border-radius:13px;padding:13px 16px;font-weight:600;font-size:15px;background:var(--wine);color:#fffdf9;width:100%;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn.ghost{background:var(--paper);color:var(--ink)}
+.btn.danger{background:none;color:#b3261e;font-weight:500}
+.btn:disabled{opacity:.6}
+.f label{display:block;font-size:12px;color:var(--muted);margin:14px 2px 6px}
+.f input,.f select,.f textarea{width:100%;border:0;background:var(--paper);border-radius:11px;padding:11px 12px;font-size:16px;color:var(--ink);-webkit-appearance:none;appearance:none;outline:none}
+.f input:focus,.f select:focus,.f textarea:focus{box-shadow:0 0 0 1.5px var(--wine)}
+.f textarea{min-height:72px;resize:vertical}
+.f .r2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--paper);border-radius:11px;padding:3px}
+.seg button{border:0;background:none;border-radius:9px;padding:8px 0;font-size:13.5px;color:var(--muted)}
+.seg button.on{background:var(--card);color:var(--ink);font-weight:600;box-shadow:0 0 0 .5px var(--line2),0 1px 3px rgba(33,26,23,.08)}
+.f-acts{display:flex;gap:8px;margin-top:20px}
+.err{color:#b3261e;font-size:13px;margin-top:10px;min-height:1em}
+.toast{position:fixed;left:50%;bottom:calc(84px + var(--sab));transform:translate(-50%,20px);opacity:0;background:var(--ink);color:#fffdf9;padding:10px 16px;border-radius:999px;font-size:14px;z-index:3000;transition:all .25s;pointer-events:none;white-space:nowrap}
+.toast.show{transform:translate(-50%,0);opacity:1}
 .loading{color:var(--muted);text-align:center;padding:40px}
-nav.tabs .in{scrollbar-width:none}
-nav.tabs .in::-webkit-scrollbar{display:none}
-html,body{overflow-x:hidden}
-@media (max-width:700px){
-  header{flex-direction:column;align-items:flex-start;padding:16px 16px 8px;gap:6px}
-  nav.tabs .in{gap:2px;padding:6px 6px}
-  nav.tabs button{flex:1 1 0;padding:8px 4px;font-size:14px}
-  nav.tabs .badge{display:none}
-}
-@media (max-width:360px){ nav.tabs button{font-size:13px} }
-@media (max-width:520px){
-  #map{height:62vh}
-  .fab{right:12px;bottom:14px;padding:12px 16px;font-size:14px}
-}
 </style>
 </head>
 <body>
-<header>
-  <h1>Weekend Piemonte 🍷<small>Langhe · Fri 27 – Sun 29 Nov 2026 · Barolo, La Morra, Verduno</small></h1>
-  <div class="me"><span class="live" id="live"></span><span id="meName"></span> <button id="changeName" type="button">change</button></div>
-</header>
-<nav class="tabs"><div class="in">
-  <button data-tab="agenda" class="on">📅 Agenda</button>
-  <button data-tab="map">🗺️ Map</button>
-  <button data-tab="ideas">💡 Ideas <span class="badge" id="ideasCount">0</span></button>
-  <button data-tab="crew">👥 Crew</button>
-</div></nav>
-
-<main>
-  <section id="agenda" class="on">
-    <div class="bar"><span class="hint">Tap an empty slot to add something, tap an item to edit it.</span></div>
-    <div class="days" id="dayBtns"></div>
-    <div class="cal" id="cal"><div class="loading">Loading…</div></div>
-    <div class="legend">
-      <span><i style="background:var(--visit)"></i>Winery visit</span>
-      <span><i style="background:var(--meal)"></i>Meal</span>
-      <span><i style="background:var(--drive)"></i>Drive</span>
-      <span><i style="background:var(--other)"></i>Other</span>
-    </div>
-  </section>
-
-  <section id="map-sec">
-    <div class="bar">
-      <div class="filters" id="mapFilters"></div>
-      <span class="hint">Red ring = already in the agenda</span>
-    </div>
-    <div id="map"></div>
-  </section>
-
-  <section id="ideas">
-    <div class="bar">
-      <div class="filters" id="ideaFilters"></div>
-      <span class="hint">👍 the ones you want to do</span>
-    </div>
-    <div class="list" id="ideaList"></div>
-  </section>
-
-  <section id="crew" class="crew">
-    <div class="bar"><span class="hint">Everyone who has opened the page and entered their name.</span></div>
-    <div class="list" id="crewList"></div>
-  </section>
-</main>
-
-<button class="btn fab" id="fab" type="button">＋ Add to agenda</button>
-
-<!-- name -->
-<dialog id="dName"><form method="dialog" id="fName">
-  <h2>Who are you? 👋</h2>
-  <p class="hint" style="margin-top:-6px">Just your first name, so the others know who added what. No account needed.</p>
-  <input id="nameInput" maxlength="40" required placeholder="e.g. Nico" autocomplete="given-name">
-  <div class="actions"><div class="r"><button class="btn" type="submit">Let's go</button></div></div>
-</form></dialog>
-
-<!-- event -->
-<dialog id="dEvent"><form method="dialog" id="fEvent">
-  <h2 id="evTitle">Add to agenda</h2>
-  <label>What</label>
-  <input name="title" maxlength="120" required placeholder="e.g. Tasting at Vietti">
-  <label>Place (optional)</label>
-  <select name="place_id"></select>
-  <div class="row3">
-    <div><label>Day</label><select name="day">
-      <option value="2026-11-27">Fri 27</option><option value="2026-11-28">Sat 28</option><option value="2026-11-29">Sun 29</option>
-    </select></div>
-    <div><label>From</label><input name="start_time" type="time" step="900" required></div>
-    <div><label>To</label><input name="end_time" type="time" step="900" required></div>
-  </div>
-  <label>Type</label>
-  <select name="kind"><option value="visit">Winery visit</option><option value="meal">Meal</option><option value="drive">Drive</option><option value="other">Other</option></select>
-  <label>Notes</label>
-  <textarea name="note" maxlength="500" placeholder="Booked? Price? Who confirmed?"></textarea>
-  <div id="evLink" style="margin-top:10px"></div>
-  <div class="hint" id="evMeta" style="margin-top:8px"></div>
-  <div class="err" id="evErr"></div>
-  <div class="actions">
-    <button class="btn danger small" type="button" id="evDel">Delete</button>
-    <div class="r"><button class="btn ghost" type="button" data-close>Cancel</button><button class="btn" type="submit">Save</button></div>
-  </div>
-</form></dialog>
-
-<!-- place -->
-<dialog id="dPlace"><form method="dialog" id="fPlace">
-  <h2 id="plTitle">Suggest a place</h2>
-  <label>Name</label>
-  <input name="name" maxlength="120" required placeholder="e.g. Vietti">
-  <div class="row">
-    <div><label>Type</label><select name="kind"><option value="winery">Winery</option><option value="restaurant">Restaurant</option><option value="stay">Stay</option><option value="other">Other</option></select></div>
-    <div><label>Town / address</label><input name="address" maxlength="200" placeholder="e.g. Castiglione Falletto"></div>
-  </div>
-  <label>Website (optional)</label>
-  <input name="website" maxlength="300" placeholder="https://…">
-  <label>Google Maps link (optional)</label>
-  <input name="maps_url" maxlength="500" placeholder="Paste a link from Google Maps">
-  <label>Why?</label>
-  <textarea name="note" maxlength="500" placeholder="Great Barolo, need to book, open Sundays…"></textarea>
-  <div class="hint" id="plMeta" style="margin-top:8px">We'll find it on the map automatically. If we can't, you'll be asked to tap where it is.</div>
-  <div class="err" id="plErr"></div>
-  <div class="actions">
-    <button class="btn danger small" type="button" id="plDel">Delete</button>
-    <div class="r"><button class="btn ghost" type="button" data-close>Cancel</button><button class="btn" type="submit" id="plSave">Save</button></div>
-  </div>
-</form></dialog>
-
-
+<div id="app">
+  <header class="top" id="top">
+    <div><div class="eyebrow">LANGHE · 27–29 NOV 2026</div><h1 id="title">Agenda</h1></div>
+    <div class="top-r"><div class="avatars" id="avatars"></div><button class="plus" id="plus" aria-label="Add"><i class="ti ti-plus"></i></button></div>
+  </header>
+  <main>
+    <section class="screen on" id="s-agenda"><div class="cal" id="cal"><div class="loading">Loading…</div></div></section>
+    <section class="screen" id="s-map"><div id="map"></div><div class="chips" id="chips"></div><div class="strip" id="strip"></div></section>
+    <section class="screen scroll" id="s-ideas"><div id="ideas"></div></section>
+    <section class="screen scroll" id="s-crew"><div id="crew"></div></section>
+  </main>
+  <nav class="tabbar" id="tabbar">
+    <button data-tab="agenda" class="on"><i class="ti ti-calendar"></i>Agenda</button>
+    <button data-tab="map"><i class="ti ti-map-2"></i>Map</button>
+    <button data-tab="ideas"><i class="ti ti-bottle"></i>Ideas</button>
+    <button data-tab="crew"><i class="ti ti-users"></i>Crew</button>
+  </nav>
+</div>
+<div class="sheet-wrap" id="sheetWrap"><div class="scrim" id="scrim"></div><div class="sheet" id="sheet"><div class="grab"></div><div id="sheetBody"></div></div></div>
 <div class="toast" id="toast"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-const SB_URL = "https://wcdmadzjwatbasvpjfln.supabase.co";
-const SB_KEY = "sb_publishable_Sdftd9mp2t48WSgLf11r_g_ieQklybp";
-const sb = supabase.createClient(SB_URL, SB_KEY);
+const sb = supabase.createClient("https://wcdmadzjwatbasvpjfln.supabase.co", "sb_publishable_Sdftd9mp2t48WSgLf11r_g_ieQklybp");
 const T = { places:"piemont_we_places", events:"piemont_we_events", votes:"piemont_we_votes", people:"piemont_we_people" };
-const DAYS = [["2026-11-27","Fri","27"],["2026-11-28","Sat","28"],["2026-11-29","Sun","29"]];
-const H0 = 8, H1 = 22; // calendar range
-const KIND_ICON = { winery:"🍇", restaurant:"🍝", stay:"🏡", other:"📍" };
-const KIND_LABEL = { winery:"Winery", restaurant:"Restaurant", stay:"Stay", other:"Other" };
+const DAYS = [
+  { d:"2026-11-27", it:"Venerdì",  short:"VEN", n:27 },
+  { d:"2026-11-28", it:"Sabato",   short:"SAB", n:28 },
+  { d:"2026-11-29", it:"Domenica", short:"DOM", n:29 },
+];
+const H0 = 7, H1 = 23;
+const EV = { visit:"Tasting", meal:"Meal", drive:"Drive", other:"Other" };
+const PK = { winery:{ l:"Winery", i:"ti-glass-full", s:"WINERIES" }, restaurant:{ l:"Restaurant", i:"ti-tools-kitchen-2", s:"RESTAURANTS" }, stay:{ l:"Stay", i:"ti-bed", s:"STAY" }, other:{ l:"Other", i:"ti-map-pin", s:"OTHER" } };
+const AV = ["#7a1c2e","#a5582a","#6f7782","#5f7350","#8a5a7a","#3f5f6f"];
 
 let S = { places:[], events:[], votes:[], people:[] };
-let me = null;
-try { me = localStorage.getItem("pwe_name"); } catch(e) {}
-let curDay = DAYS[0][0];
-let ideaFilter = "all", mapFilter = "all";
+let me = null; try { me = localStorage.getItem("pwe_name"); } catch(e) {}
+let tab = "agenda", mapFilter = "all", sheetState = null, scrolledCal = false;
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const toMin = t => { const [h,m] = t.split(":").map(Number); return h*60+m; };
 const hhmm = t => t.slice(0,5);
-const toast = msg => { const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),2200); };
+const fmtMin = m => `${String(Math.floor(m/60)).padStart(2,"0")}:${String(m%60).padStart(2,"0")}`;
+const dur = (a,b) => { const m = toMin(b)-toMin(a); return m%60 ? `${Math.floor(m/60)} h ${m%60}` : `${m/60} h`; };
+const day = d => DAYS.find(x => x.d === d) || { it:d, short:d, n:"" };
 const placeById = id => S.places.find(p => p.id === id);
 const votesFor = id => S.votes.filter(v => v.place_id === id);
-const link = p => p.website && /^https?:\/\//.test(p.website) ? { url:p.website, label:"Website ↗" } : { url:gmaps(p), label:"Google Maps ↗" };
+const mine = id => me && votesFor(id).find(v => v.voter.toLowerCase() === me.toLowerCase());
+const town = p => p && p.address ? p.address.split(",").pop().trim() : "";
+const plannedFor = id => S.events.filter(e => e.place_id === id).sort((a,b) => (a.day+a.start_time).localeCompare(b.day+b.start_time));
 const gmaps = p => p.maps_url && /^https?:\/\//.test(p.maps_url) ? p.maps_url
   : (p.lat!=null ? `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.name+" "+(p.address||"")+" Piemonte")}`);
-const dayLabel = d => { const x = DAYS.find(z=>z[0]===d); return x ? `${x[1]} ${x[2]}` : d; };
-
-// ---------- name ----------
-function setMe(n){ me = n.trim().slice(0,40); try{localStorage.setItem("pwe_name", me);}catch(e){} $("#meName").textContent = "You're " + me; }
-$("#fName").addEventListener("submit", e => { const v=$("#nameInput").value.trim(); if(!v){e.preventDefault();return;} const old = me; setMe(v); registerMe(old); });
-async function registerMe(oldName){
-  if (!me) return;
-  const has = n => S.people.find(p => p.name.toLowerCase() === (n||"").toLowerCase());
-  if (has(me)) return;
-  const prev = oldName && oldName.toLowerCase() !== me.toLowerCase() ? has(oldName) : null;
-  const { error } = prev
-    ? await sb.from(T.people).update({ name: me }).eq("id", prev.id)
-    : await sb.from(T.people).insert({ name: me });
-  if (!error) load();
-}
-$("#changeName").onclick = () => { $("#nameInput").value = me||""; $("#dName").showModal(); };
-if (me) setMe(me);
-
-// ---------- tabs ----------
-let map, markers = [];
-document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => showTab(b.dataset.tab));
-function showTab(t){
-  document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab===t));
-  document.querySelectorAll("main section").forEach(s => s.classList.remove("on"));
-  (t==="map" ? $("#map-sec") : $("#"+t)).classList.add("on");
-  const fab = $("#fab");
-  fab.style.display = "";
-  if (t==="agenda") fab.textContent = "＋ Add to agenda";
-  else if (t==="map" || t==="ideas") fab.textContent = "＋ Suggest a place";
-  else fab.style.display = "none";
-  fab.dataset.mode = t;
-  if (t==="map") { initMap(); setTimeout(()=>{ map.invalidateSize(); fitMap(); }, 50); }
-  if (location.hash.slice(1)!==t) history.replaceState(null,"","#"+t);
-}
-$("#fab").onclick = () => {
-  const m = $("#fab").dataset.mode || "agenda";
-  if (!me) return $("#dName").showModal();
-  if (m==="agenda") openEvent(null, { day: curDay, start_time:"10:00", end_time:"12:00" });
-  else openPlace(null);
-};
-document.querySelectorAll("[data-close]").forEach(b => b.onclick = () => b.closest("dialog").close());
+const site = p => p.website && /^https?:\/\//.test(p.website) ? p.website : null;
+const link = p => site(p) ? { url:site(p), label:"Website" } : { url:gmaps(p), label:"Google Maps" };
+const dirUrl = p => p.lat!=null ? `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}` : gmaps(p);
+const avColor = n => { let h=0; for (const c of n.toLowerCase()) h = (h*31 + c.charCodeAt(0)) >>> 0; return AV[h % AV.length]; };
+const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),2200); }
 
 // ---------- data ----------
 async function load(){
   const [p,e,v,c] = await Promise.all([
-    sb.from(T.places).select("*").order("created_at"),
+    sb.from(T.places).select("*").order("name"),
     sb.from(T.events).select("*").order("day").order("start_time"),
     sb.from(T.votes).select("*"),
     sb.from(T.people).select("*").order("created_at"),
@@ -344,271 +240,374 @@ async function load(){
   S = { places:p.data, events:e.data, votes:v.data, people:c.data };
   renderAll();
 }
-let reloadT;
-const reload = () => { clearTimeout(reloadT); reloadT = setTimeout(load, 150); };
-sb.channel("pwe").on("postgres_changes",{event:"*",schema:"public"}, payload => {
-  if (Object.values(T).includes(payload.table)) reload();
-}).subscribe(st => $("#live").classList.toggle("ok", st==="SUBSCRIBED"));
+let reloadT; const reload = () => { clearTimeout(reloadT); reloadT = setTimeout(load, 150); };
+sb.channel("pwe").on("postgres_changes", { event:"*", schema:"public" }, x => { if (Object.values(T).includes(x.table)) reload(); }).subscribe();
 document.addEventListener("visibilitychange", () => { if (!document.hidden) reload(); });
 
-function renderAll(){ renderCal(); renderIdeas(); renderCrew(); if (map) renderMarkers(); }
+async function registerMe(oldName){
+  if (!me) return;
+  const has = n => S.people.find(p => p.name.toLowerCase() === (n||"").toLowerCase());
+  if (has(me)) return;
+  const prev = oldName && oldName.toLowerCase() !== me.toLowerCase() ? has(oldName) : null;
+  const { error } = prev ? await sb.from(T.people).update({ name:me }).eq("id", prev.id) : await sb.from(T.people).insert({ name:me });
+  if (!error) load();
+}
+function setMe(n){ me = n.trim().slice(0,40); try { localStorage.setItem("pwe_name", me); } catch(e) {} }
 
-// ---------- calendar ----------
-function renderCal(){
-  const db = $("#dayBtns");
-  db.innerHTML = DAYS.map(([d,w,n]) => {
-    const c = S.events.filter(e=>e.day===d).length;
-    return `<button data-d="${d}" class="${d===curDay?"on":""}">${w} ${n}<small>${c} planned</small></button>`;
-  }).join("");
-  db.querySelectorAll("button").forEach(b => b.onclick = () => { curDay = b.dataset.d; renderCal(); });
-
-  const hours = [];
-  for (let h=H0; h<H1; h++) hours.push(`<div>${String(h).padStart(2,"0")}:00</div>`);
-  const cols = DAYS.map(([d,w,n]) => {
-    const slots = []; for (let h=H0; h<H1; h++) slots.push(`<div class="slot" data-d="${d}" data-h="${h}"></div>`);
-    const evs = S.events.filter(e=>e.day===d).map(e => {
-      const s = Math.max(toMin(e.start_time), H0*60), en = Math.min(toMin(e.end_time), H1*60);
-      const top = (s - H0*60)/60, hgt = Math.max((en - s)/60, .5);
-      const p = e.place_id ? placeById(e.place_id) : null;
-      return `<button class="ev ${e.kind}" data-id="${e.id}" style="top:calc(${top} * var(--hour) + 2px);height:calc(${hgt} * var(--hour) - 4px)">
-        <b>${esc(e.title)}</b><span>${hhmm(e.start_time)}–${hhmm(e.end_time)}${p&&p.address?" · "+esc(p.address.split(",").pop().trim()):""}</span></button>`;
-    }).join("");
-    return `<div class="colwrap ${d===curDay?"on":""}"><div class="colhead">${w} ${n}<small>Nov</small></div><div class="col">${slots.join("")}${evs}</div></div>`;
-  }).join("");
-  $("#cal").innerHTML = `<div class="hours"><div class="sp"></div>${hours.join("")}</div><div class="cols">${cols}</div>`;
-  $("#cal").querySelectorAll(".slot").forEach(s => s.onclick = () => {
-    if (!me) return $("#dName").showModal();
-    const h = +s.dataset.h; openEvent(null, { day:s.dataset.d, start_time:`${String(h).padStart(2,"0")}:00`, end_time:`${String(Math.min(h+2,23)).padStart(2,"0")}:00` });
-  });
-  $("#cal").querySelectorAll(".ev").forEach(b => b.onclick = () => openEvent(S.events.find(e=>e.id===b.dataset.id)));
+function renderAll(){
+  renderTop(); renderCal(); renderIdeas(); renderCrew();
+  if (map) { renderMarkers(); renderStrip(); if (!initMap.fitted && tab === "map" && visible().length) { fitMap(); initMap.fitted = true; } }
+  if (sheetState && !sheetState.form) refreshSheet();
 }
 
-// ---------- event dialog ----------
-let editingEvent = null;
-function placeOptions(sel){
-  const sorted = [...S.places].sort((a,b)=>a.name.localeCompare(b.name));
-  return `<option value="">— none —</option>` + sorted.map(p => `<option value="${p.id}" ${p.id===sel?"selected":""}>${KIND_ICON[p.kind]} ${esc(p.name)}</option>`).join("");
+// ---------- shell ----------
+const TITLES = { agenda:"Agenda", map:"Map", ideas:"Ideas", crew:"Crew" };
+document.querySelectorAll("#tabbar button").forEach(b => b.onclick = () => showTab(b.dataset.tab));
+function showTab(t){
+  tab = t;
+  document.querySelectorAll("#tabbar button").forEach(b => b.classList.toggle("on", b.dataset.tab === t));
+  document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === "s-"+t));
+  $("#top").style.display = t === "map" ? "none" : "";
+  $("#title").textContent = TITLES[t];
+  $("#plus").style.visibility = t === "crew" ? "hidden" : "visible";
+  if (t === "map") { initMap(); setTimeout(() => { map.invalidateSize(); if (!initMap.fitted && visible().length) { fitMap(); initMap.fitted = true; } }, 30); }
+  if (t === "agenda") scrollCal();
+  if (location.hash.slice(1) !== t) history.replaceState(null, "", "#"+t);
 }
-function openEvent(ev, preset={}){
-  if (!me) return $("#dName").showModal();
-  editingEvent = ev;
-  const f = $("#fEvent"), v = ev || { title:"", kind:"visit", note:"", place_id:null, ...preset };
-  $("#evTitle").textContent = ev ? "Edit" : "Add to agenda";
-  f.title.value = v.title || ""; f.day.value = v.day; f.start_time.value = hhmm(v.start_time); f.end_time.value = hhmm(v.end_time);
-  f.kind.value = v.kind || "visit"; f.note.value = v.note || "";
-  f.place_id.innerHTML = placeOptions(v.place_id);
-  $("#evMeta").textContent = ev ? `Added by ${ev.added_by||"someone"}` : "";
-  showEvLink(v.place_id);
-  $("#evErr").textContent = ""; $("#evDel").style.display = ev ? "" : "none"; $("#evDel").dataset.armed = "";
-  $("#evDel").textContent = "Delete";
-  $("#dEvent").showModal();
+function renderTop(){
+  const ppl = S.people.slice(0,4);
+  $("#avatars").innerHTML = ppl.map(p => `<span class="av" style="background:${avColor(p.name)}" title="${esc(p.name)}">${esc(p.name[0].toUpperCase())}</span>`).join("")
+    + (S.people.length > 4 ? `<span class="av" style="background:var(--muted)">+${S.people.length-4}</span>` : "");
 }
-function showEvLink(id){ const p = id && placeById(id); $("#evLink").innerHTML = p ? `<a class="btn small ghost" style="text-decoration:none" href="${esc(link(p).url)}" target="_blank" rel="noopener">${esc(p.name)} · ${link(p).label}</a>` : ""; }
-$("#fEvent").place_id.addEventListener("change", e => {
-  const f = $("#fEvent"), p = placeById(e.target.value);
-  showEvLink(e.target.value);
-  if (p && !f.title.value.trim()) f.title.value = p.name;
-  if (p) f.kind.value = p.kind==="restaurant" ? "meal" : (p.kind==="winery" ? "visit" : f.kind.value);
-});
-$("#fEvent").addEventListener("submit", async e => {
-  e.preventDefault();
-  const f = e.target;
-  const row = { title:f.title.value.trim(), day:f.day.value, start_time:f.start_time.value, end_time:f.end_time.value,
-    kind:f.kind.value, note:f.note.value.trim()||null, place_id:f.place_id.value||null };
-  if (toMin(row.end_time) <= toMin(row.start_time)) { $("#evErr").textContent = "End time must be after start time."; return; }
-  const q = editingEvent
-    ? sb.from(T.events).update({ ...row, updated_at:new Date().toISOString() }).eq("id", editingEvent.id)
-    : sb.from(T.events).insert({ ...row, added_by:me });
-  const { error } = await q;
-  if (error) { $("#evErr").textContent = error.message; return; }
-  $("#dEvent").close(); toast(editingEvent ? "Updated" : "Added to the agenda"); curDay = row.day; load();
-});
-$("#evDel").onclick = async () => {
-  const b = $("#evDel");
-  if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = "Tap again to delete"; return; }
-  const { error } = await sb.from(T.events).delete().eq("id", editingEvent.id);
-  if (error) { $("#evErr").textContent = error.message; return; }
-  $("#dEvent").close(); toast("Deleted"); load();
+$("#plus").onclick = () => onPlus();
+function onPlus(){
+  if (!me) return askName();
+  if (tab === "agenda") openEventForm(null, { day: DAYS.some(x=>x.d===todayStr()) ? todayStr() : DAYS[0].d, start_time:"10:00", end_time:"12:00" });
+  else openPlaceForm(null);
+}
+
+// ---------- sheet ----------
+const wrap = $("#sheetWrap"), sheet = $("#sheet");
+function openSheet(html, state){
+  sheetState = state || {};
+  $("#sheetBody").innerHTML = html;
+  sheet.scrollTop = 0; sheet.style.transform = "";
+  wrap.classList.add("open");
+}
+function closeSheet(){ wrap.classList.remove("open"); sheetState = null; }
+$("#scrim").onclick = closeSheet;
+document.addEventListener("keydown", e => { if (e.key === "Escape" && sheetState) closeSheet(); });
+(() => { // drag down to close
+  let y0 = null, dy = 0;
+  sheet.addEventListener("touchstart", e => { if (sheet.scrollTop <= 0 && !e.target.closest("input,textarea,select")) { y0 = e.touches[0].clientY; dy = 0; sheet.style.transition = "none"; } }, { passive:true });
+  sheet.addEventListener("touchmove", e => { if (y0 == null) return; dy = e.touches[0].clientY - y0; if (dy > 0) sheet.style.transform = `translateY(${dy}px)`; }, { passive:true });
+  sheet.addEventListener("touchend", () => { if (y0 == null) return; sheet.style.transition = ""; sheet.style.transform = ""; if (dy > 90) closeSheet(); y0 = null; });
+})();
+function refreshSheet(){
+  const s = sheetState; if (!s) return;
+  if (s.type === "event") { const ev = S.events.find(e => e.id === s.id); ev ? openEvent(ev) : closeSheet(); }
+  if (s.type === "place") { const p = placeById(s.id); p ? openPlace(p) : closeSheet(); }
+}
+const actsHtml = (p, extra="") => {
+  if (!p) return "";
+  const a = [`<a class="act" href="${esc(link(p).url)}" target="_blank" rel="noopener"><i class="ti ${site(p)?"ti-world":"ti-brand-google-maps"}"></i>${link(p).label}</a>`,
+    `<a class="act" href="${esc(dirUrl(p))}" target="_blank" rel="noopener"><i class="ti ti-navigation"></i>Directions</a>`];
+  if (p.phone) a.push(`<a class="act" href="tel:${esc(p.phone.replace(/\s/g,""))}"><i class="ti ti-phone"></i>Call</a>`);
+  return `<div class="acts">${a.join("")}${extra}</div>`;
 };
 
-// ---------- ideas ----------
-function filterBar(el, cur, onPick){
-  const opts = [["all","All"],["winery","🍇 Wineries"],["restaurant","🍝 Restaurants"],["stay","🏡 Stay"]];
-  el.innerHTML = opts.map(([k,l]) => `<button class="chip ${k===cur?"on":""}" data-k="${k}">${l}</button>`).join("");
-  el.querySelectorAll("button").forEach(b => b.onclick = () => onPick(b.dataset.k));
+// ---------- name ----------
+function askName(){
+  openSheet(`<form class="f" id="fName">
+    <div class="sh-ey">WEEKEND IN PIEMONTE</div>
+    <div class="sh-t">Who are you?</div>
+    <div class="sh-m">Your first name, so the others see who added what. No account needed.</div>
+    <label>First name</label><input name="n" maxlength="40" required placeholder="Giulia" autocomplete="given-name" value="${esc(me||"")}">
+    <div class="f-acts"><button class="btn" type="submit">Continue</button></div></form>`, { form:true });
+  const f = $("#fName");
+  setTimeout(() => f.n.focus(), 350);
+  f.onsubmit = e => { e.preventDefault(); const v = f.n.value.trim(); if (!v) return; const old = me; setMe(v); closeSheet(); registerMe(old); renderAll(); };
 }
-function plannedDays(id){ return [...new Set(S.events.filter(e=>e.place_id===id).map(e=>dayLabel(e.day)))]; }
-function renderIdeas(){
-  $("#ideasCount").textContent = S.places.length;
-  filterBar($("#ideaFilters"), ideaFilter, k => { ideaFilter = k; renderIdeas(); });
-  const list = S.places.filter(p => ideaFilter==="all" || p.kind===ideaFilter || (ideaFilter==="stay" && p.kind==="other"))
-    .map(p => ({ p, v:votesFor(p.id) }))
-    .sort((a,b) => b.v.length - a.v.length || a.p.name.localeCompare(b.p.name));
-  if (!list.length) { $("#ideaList").innerHTML = `<div class="empty">Nothing here yet. Suggest a place!</div>`; return; }
-  $("#ideaList").innerHTML = list.map(({p,v}) => {
-    const mine = me && v.some(x => x.voter.toLowerCase()===me.toLowerCase());
-    const pd = plannedDays(p.id);
-    return `<div class="card">
-      <div class="ic ${p.kind}">${KIND_ICON[p.kind]}</div>
-      <div class="body">
-        <h3>${esc(p.name)}</h3>
-        <div class="meta">${esc(p.address||KIND_LABEL[p.kind])} · added by ${esc(p.added_by||"?")}</div>
-        ${p.note?`<div class="note">${esc(p.note)}</div>`:""}
-        <div class="tags">
-          ${pd.length?`<span class="tag planned">📅 ${pd.join(", ")}</span>`:""}
-          ${v.length?`<span class="tag">👍 ${esc(v.map(x=>x.voter).join(", "))}</span>`:""}
-          <a class="tag" href="${esc(link(p).url)}" target="_blank" rel="noopener">${link(p).label}</a>
-          <button class="tag" style="border:0" data-plan="${p.id}">＋ agenda</button>
-          <button class="tag" style="border:0" data-edit="${p.id}">edit</button>
-        </div>
-      </div>
-      <button class="vote ${mine?"on":""}" data-vote="${p.id}">👍 ${v.length}<small>${mine?"you're in":"vote"}</small></button>
-    </div>`;
+
+// ---------- agenda ----------
+function lanes(evs){
+  const out = []; let group = [], end = -1;
+  const flush = () => { const ln = []; group.forEach(e => { let i = ln.findIndex(x => x <= toMin(e.start_time)); if (i < 0) { i = ln.length; ln.push(0); } ln[i] = toMin(e.end_time); e._l = i; }); group.forEach(e => e._n = ln.length); out.push(...group); group = []; end = -1; };
+  evs.forEach(e => { if (group.length && toMin(e.start_time) >= end) flush(); group.push(e); end = Math.max(end, toMin(e.end_time)); });
+  if (group.length) flush();
+  return out;
+}
+function renderCal(){
+  const today = todayStr(), hours = H1 - H0;
+  const head = `<div class="cal-head"><span></span>${DAYS.map(x => `<div class="dh ${x.d===today?"today":""}"><span class="short">${x.short}</span><span class="full">${x.it}</span><b>${x.n}</b></div>`).join("")}</div>`;
+  let hrs = ""; for (let h = H0; h < H1; h++) hrs += `<div style="height:var(--hour)">${h}:00</div>`;
+  const cols = DAYS.map(x => {
+    const evs = lanes(S.events.filter(e => e.day === x.d).map(e => ({...e})));
+    const blocks = evs.map(e => {
+      const s = Math.max(toMin(e.start_time), H0*60), en = Math.min(toMin(e.end_time), H1*60), len = en - s;
+      const p = e.place_id ? placeById(e.place_id) : null;
+      const w = 100 / e._n;
+      const sub = len >= 75 ? `<span>${hhmm(e.start_time)}${p && town(p) ? " · "+esc(town(p)) : ""}</span>` : "";
+      return `<button class="ev ${e.kind}" data-id="${e.id}" style="top:calc(${(s-H0*60)/60} * var(--hour) + 1px);height:calc(${len/60} * var(--hour) - 3px);left:calc(${e._l*w}% + 2px);width:calc(${w}% - 5px)"><b>${esc(e.title)}</b>${sub}</button>`;
+    }).join("");
+    let now = "";
+    if (x.d === today) { const d = new Date(), m = d.getHours()*60 + d.getMinutes(); if (m >= H0*60 && m <= H1*60) now = `<div class="now" style="top:calc(${(m-H0*60)/60} * var(--hour))"></div>`; }
+    return `<div class="col" data-d="${x.d}" style="height:calc(${hours} * var(--hour));background:repeating-linear-gradient(to bottom,transparent 0,transparent calc(var(--hour) - .5px),var(--line) calc(var(--hour) - .5px),var(--line) var(--hour))">${blocks}${now}</div>`;
   }).join("");
-  $("#ideaList").querySelectorAll("[data-vote]").forEach(b => b.onclick = () => toggleVote(b.dataset.vote));
-  $("#ideaList").querySelectorAll("[data-plan]").forEach(b => b.onclick = () => planPlace(b.dataset.plan));
-  $("#ideaList").querySelectorAll("[data-edit]").forEach(b => b.onclick = () => openPlace(placeById(b.dataset.edit)));
+  const keep = $("#calBody") ? $("#calBody").scrollTop : null;
+  $("#cal").innerHTML = head + `<div class="cal-body" id="calBody" style="--hour:48px"><div class="hrs">${hrs}</div>${cols}</div>`;
+  if (keep != null) $("#calBody").scrollTop = keep; else scrollCal();
+  $("#cal").querySelectorAll(".col").forEach(c => c.onclick = e => {
+    if (e.target.closest(".ev")) return;
+    if (!me) return askName();
+    const hp = c.offsetHeight / hours, y = e.clientY - c.getBoundingClientRect().top;
+    const start = Math.min(H0*60 + Math.floor(y / hp * 2) * 30, (H1-1)*60);
+    openEventForm(null, { day:c.dataset.d, start_time:fmtMin(start), end_time:fmtMin(Math.min(start+120, H1*60-1)) });
+  });
+  $("#cal").querySelectorAll(".ev").forEach(b => b.onclick = () => openEvent(S.events.find(e => e.id === b.dataset.id)));
+}
+function scrollCal(){
+  const b = $("#calBody"); if (!b || scrolledCal || !b.offsetHeight) return;
+  const d = new Date(), today = DAYS.some(x => x.d === todayStr());
+  const h = today ? Math.max(H0, d.getHours() - 1) : 8.5;
+  b.scrollTop = (h - H0) * 48; scrolledCal = true;
+}
+
+function openEvent(ev){
+  const p = ev.place_id ? placeById(ev.place_id) : null, x = day(ev.day);
+  openSheet(`<div class="sh-ey"><span>${EV[ev.kind].toUpperCase()} · ${x.it.toUpperCase()} ${x.n}</span><button class="link" id="evEdit">Edit</button></div>
+    <div class="sh-t">${esc(ev.title)}</div>
+    <div class="sh-m">${hhmm(ev.start_time)} – ${hhmm(ev.end_time)}${p && town(p) ? " · "+esc(town(p)) : ""}</div>
+    ${actsHtml(p)}
+    ${ev.note ? `<div class="kv"><span>Notes</span>${esc(ev.note)}</div>` : ""}
+    ${p && p.address ? `<div class="kv"><span>Address</span>${esc(p.address)}</div>` : ""}
+    <div class="kv" style="color:var(--muted);font-size:12.5px">Added by ${esc(ev.added_by||"someone")}</div>`, { type:"event", id:ev.id });
+  $("#evEdit").onclick = () => openEventForm(ev);
+}
+
+function seg(name, opts, val){ return `<div class="seg" data-name="${name}">${opts.map(([v,l]) => `<button type="button" data-v="${v}" class="${v===val?"on":""}">${l}</button>`).join("")}</div><input type="hidden" name="${name}" value="${esc(val)}">`; }
+function wireSeg(f){ f.querySelectorAll(".seg").forEach(s => s.querySelectorAll("button").forEach(b => b.onclick = () => { s.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); f[s.dataset.name].value = b.dataset.v; f[s.dataset.name].dispatchEvent(new Event("change")); })); }
+function setSeg(f, name, v){ f[name].value = v; f.querySelectorAll(`.seg[data-name="${name}"] button`).forEach(b => b.classList.toggle("on", b.dataset.v === v)); }
+
+function openEventForm(ev, preset = {}){
+  if (!me) return askName();
+  const v = ev || { title:"", kind:"visit", note:"", place_id:null, ...preset };
+  const opts = `<option value="">No place</option>` + [...S.places].sort((a,b)=>a.name.localeCompare(b.name)).map(p => `<option value="${p.id}" ${p.id===v.place_id?"selected":""}>${esc(p.name)}</option>`).join("");
+  openSheet(`<form class="f" id="fEv">
+    <div class="sh-ey"><span>${ev ? "EDIT" : "NEW IN THE AGENDA"}</span><button type="button" class="link" id="evCancel">Cancel</button></div>
+    <label>What</label><input name="title" maxlength="120" required placeholder="Tasting at Vietti" value="${esc(v.title)}">
+    <label>Place</label><select name="place_id">${opts}</select>
+    <label>Day</label>${seg("day", DAYS.map(x => [x.d, `${x.it.slice(0,3)} ${x.n}`]), v.day)}
+    <div class="r2"><div><label>From</label><input name="start_time" type="time" step="900" required value="${hhmm(v.start_time)}"></div><div><label>To</label><input name="end_time" type="time" step="900" required value="${hhmm(v.end_time)}"></div></div>
+    <label>Type</label>${seg("kind", Object.entries(EV), v.kind)}
+    <label>Notes</label><textarea name="note" maxlength="500" placeholder="Booked for 4, ask for the Riserva">${esc(v.note||"")}</textarea>
+    <div class="err" id="evErr"></div>
+    <div class="f-acts">${ev ? `<button type="button" class="btn danger" id="evDel" style="width:auto">Delete</button>` : ""}<button class="btn" type="submit">${ev ? "Save" : "Add"}</button></div>
+  </form>`, { form:true });
+  const f = $("#fEv"); wireSeg(f);
+  $("#evCancel").onclick = () => ev ? openEvent(ev) : closeSheet();
+  f.place_id.onchange = () => { const p = placeById(f.place_id.value); if (!p) return; if (!f.title.value.trim()) f.title.value = p.name; if (p.kind==="restaurant") setSeg(f,"kind","meal"); else if (p.kind==="winery") setSeg(f,"kind","visit"); };
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const row = { title:f.title.value.trim(), day:f.day.value, start_time:f.start_time.value, end_time:f.end_time.value, kind:f.kind.value, note:f.note.value.trim()||null, place_id:f.place_id.value||null };
+    if (!row.title) return $("#evErr").textContent = "Give it a name.";
+    if (toMin(row.end_time) <= toMin(row.start_time)) return $("#evErr").textContent = "End time must be after start time.";
+    const { data, error } = ev
+      ? await sb.from(T.events).update({ ...row, updated_at:new Date().toISOString() }).eq("id", ev.id).select().single()
+      : await sb.from(T.events).insert({ ...row, added_by:me }).select().single();
+    if (error) return $("#evErr").textContent = error.message;
+    const i = S.events.findIndex(x => x.id === data.id); i >= 0 ? S.events[i] = data : S.events.push(data);
+    renderAll(); openEvent(data); toast(ev ? "Saved" : "Added to the agenda");
+  };
+  if (ev) $("#evDel").onclick = async () => {
+    const b = $("#evDel"); if (!b.dataset.armed) { b.dataset.armed = 1; b.textContent = "Tap again to delete"; return; }
+    const { error } = await sb.from(T.events).delete().eq("id", ev.id);
+    if (error) return $("#evErr").textContent = error.message;
+    S.events = S.events.filter(x => x.id !== ev.id); closeSheet(); renderAll(); toast("Deleted");
+  };
+}
+
+// ---------- places ----------
+function openPlace(p){
+  const v = votesFor(p.id), my = mine(p.id), pl = plannedFor(p.id);
+  const status = pl.length
+    ? pl.map(e => `<div class="status"><i class="ti ti-calendar-check"></i>In the agenda · ${day(e.day).it} ${hhmm(e.start_time)}</div>`).join("")
+    : `<div style="margin-top:14px"><button class="btn ghost" id="plPlan"><i class="ti ti-calendar-plus"></i>Add to agenda</button></div>`;
+  openSheet(`<div class="sh-ey"><span>${PK[p.kind].l.toUpperCase()}${town(p) ? " · "+esc(town(p).toUpperCase()) : ""}</span><button class="link" id="plEdit">Edit</button></div>
+    <div class="sh-tr"><div class="sh-t">${esc(p.name)}</div><button class="heart ${my?"on":""}" id="plVote"><i class="ti ti-heart"></i>${v.length}</button></div>
+    <div class="sh-m">${esc(p.address || "")}</div>
+    ${status}
+    ${actsHtml(p, `<button class="act ${my?"on":""}" id="plVote2"><i class="ti ti-heart"></i>${my ? "Voted" : "Vote"}</button>`)}
+    ${p.note ? `<div class="kv"><span>Why</span>${esc(p.note)}</div>` : ""}
+    ${v.length ? `<div class="kv"><span>Votes</span>${esc(v.map(x => x.voter).join(", "))}</div>` : ""}
+    <div class="kv" style="color:var(--muted);font-size:12.5px">Added by ${esc(p.added_by||"someone")}</div>`, { type:"place", id:p.id });
+  $("#plEdit").onclick = () => openPlaceForm(p);
+  $("#plVote").onclick = $("#plVote2").onclick = () => toggleVote(p.id);
+  if (!pl.length) $("#plPlan").onclick = () => planPlace(p.id);
 }
 async function toggleVote(id){
-  if (!me) return $("#dName").showModal();
-  const mine = votesFor(id).find(x => x.voter.toLowerCase()===me.toLowerCase());
-  const { error } = mine
-    ? await sb.from(T.votes).delete().eq("place_id", id).eq("voter", mine.voter)
-    : await sb.from(T.votes).insert({ place_id:id, voter:me });
+  if (!me) return askName();
+  const m = mine(id);
+  const { error } = m ? await sb.from(T.votes).delete().eq("place_id", id).eq("voter", m.voter) : await sb.from(T.votes).insert({ place_id:id, voter:me });
   if (error) return toast(error.message);
-  load();
+  if (m) S.votes = S.votes.filter(x => !(x.place_id === id && x.voter === m.voter)); else S.votes.push({ place_id:id, voter:me });
+  renderAll();
 }
 function planPlace(id){
   const p = placeById(id);
-  openEvent(null, { title:p.name, place_id:id, kind:p.kind==="restaurant"?"meal":"visit", day:curDay,
-    start_time: p.kind==="restaurant" ? "12:30" : "15:00", end_time: p.kind==="restaurant" ? "14:30" : "16:30" });
+  openEventForm(null, { title:p.name, place_id:id, kind:p.kind==="restaurant"?"meal":"visit", day:DAYS[0].d,
+    start_time:p.kind==="restaurant"?"12:30":"15:00", end_time:p.kind==="restaurant"?"14:30":"16:30" });
 }
-
-// ---------- place dialog ----------
-let editingPlace = null, pendingPlace = null;
-function openPlace(p){
-  if (!me) return $("#dName").showModal();
-  editingPlace = p;
-  const f = $("#fPlace");
-  $("#plTitle").textContent = p ? "Edit place" : "Suggest a place";
-  f.name.value = p?.name||""; f.kind.value = p?.kind||"winery"; f.address.value = p?.address||""; f.maps_url.value = p?.maps_url||""; f.website.value = p?.website||""; f.note.value = p?.note||"";
-  $("#plErr").textContent = ""; $("#plDel").style.display = p ? "" : "none"; $("#plDel").dataset.armed=""; $("#plDel").textContent="Delete";
-  $("#plMeta").textContent = p ? `Added by ${p.added_by||"someone"}` : "We'll find it on the map automatically. If we can't, you'll be asked to tap where it is.";
-  $("#dPlace").showModal();
-}
-function normUrl(u){ u = (u||"").trim(); if (!u) return null; return /^https?:\/\//i.test(u) ? u : "https://" + u; }
-function coordsFromUrl(u){
-  if (!u) return null;
-  let m = u.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/) || u.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || u.match(/[?&](?:q|query|ll)=(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
-  return m ? { lat:+m[1], lng:+m[2] } : null;
-}
+function normUrl(u){ u = (u||"").trim(); if (!u) return null; return /^https?:\/\//i.test(u) ? u : "https://"+u; }
+function coordsFromUrl(u){ if (!u) return null; const m = u.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/) || u.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || u.match(/[?&](?:q|query|ll|destination)=(-?\d+\.\d+),\s*(-?\d+\.\d+)/); return m ? { lat:+m[1], lng:+m[2] } : null; }
 async function geocode(name, addr){
-  const tries = [`${name}, ${addr||""}, Piemonte, Italy`, `${addr||name}, Piemonte, Italy`];
-  for (const q of tries) {
-    try {
-      const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=it&viewbox=7.5,44.95,8.4,44.4&q=${encodeURIComponent(q)}`, { headers:{ "Accept-Language":"en" } });
-      const j = await r.json();
-      if (j[0]) return { lat:+j[0].lat, lng:+j[0].lon };
-    } catch(e) {}
+  for (const q of [`${name}, ${addr||""}, Piemonte, Italy`, `${addr||name}, Piemonte, Italy`]) {
+    try { const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=it&viewbox=7.5,44.95,8.4,44.4&q=${encodeURIComponent(q)}`); const j = await r.json(); if (j[0]) return { lat:+j[0].lat, lng:+j[0].lon }; } catch(e) {}
   }
   return null;
 }
-$("#fPlace").addEventListener("submit", async e => {
-  e.preventDefault();
-  const f = e.target, btn = $("#plSave");
-  const row = { name:f.name.value.trim(), kind:f.kind.value, address:f.address.value.trim()||null, maps_url:f.maps_url.value.trim()||null, website:normUrl(f.website.value), note:f.note.value.trim()||null };
-  btn.disabled = true; btn.textContent = "Saving…";
-  try {
-    let c = coordsFromUrl(row.maps_url);
-    const changedLoc = !editingPlace || editingPlace.address !== row.address || editingPlace.maps_url !== row.maps_url || editingPlace.name !== row.name;
-    if (!c && changedLoc) c = await geocode(row.name, row.address);
-    if (c) Object.assign(row, c);
-    if (editingPlace) {
-      const { error } = await sb.from(T.places).update(row).eq("id", editingPlace.id);
-      if (error) throw error;
-      $("#dPlace").close(); toast("Updated"); load();
-    } else {
-      if (!c) { pendingPlace = row; $("#dPlace").close(); startPlacing(); return; }
-      const { error } = await sb.from(T.places).insert({ ...row, added_by:me });
-      if (error) throw error;
-      $("#dPlace").close(); toast("Added — others can vote now"); load();
-    }
-  } catch(err) { $("#plErr").textContent = err.message || String(err); }
-  finally { btn.disabled = false; btn.textContent = "Save"; }
-});
-$("#plDel").onclick = async () => {
-  const b = $("#plDel");
-  if (!b.dataset.armed) { b.dataset.armed="1"; b.textContent = "Tap again to delete"; return; }
-  const { error } = await sb.from(T.places).delete().eq("id", editingPlace.id);
-  if (error) { $("#plErr").textContent = error.message; return; }
-  $("#dPlace").close(); toast("Deleted"); load();
-};
-function startPlacing(){
-  showTab("map");
+function openPlaceForm(p){
+  if (!me) return askName();
+  openSheet(`<form class="f" id="fPl">
+    <div class="sh-ey"><span>${p ? "EDIT PLACE" : "SUGGEST A PLACE"}</span><button type="button" class="link" id="plCancel">Cancel</button></div>
+    <label>Name</label><input name="name" maxlength="120" required placeholder="Vietti" value="${esc(p?.name||"")}">
+    <label>Type</label>${seg("kind", [["winery","Winery"],["restaurant","Restaurant"],["stay","Stay"],["other","Other"]], p?.kind||"winery")}
+    <label>Address or town</label><input name="address" maxlength="200" placeholder="Castiglione Falletto" value="${esc(p?.address||"")}">
+    <div class="r2"><div><label>Website</label><input name="website" maxlength="300" placeholder="vietti.com" value="${esc(p?.website||"")}"></div><div><label>Phone</label><input name="phone" type="tel" maxlength="40" placeholder="+39 0173 …" value="${esc(p?.phone||"")}"></div></div>
+    <label>Google Maps link (optional)</label><input name="maps_url" maxlength="500" placeholder="Paste a link from Google Maps" value="${esc(p?.maps_url||"")}">
+    <label>Why?</label><textarea name="note" maxlength="500" placeholder="Great Barolo, open on Sundays">${esc(p?.note||"")}</textarea>
+    <div class="err" id="plErr"></div>
+    <div class="f-acts">${p ? `<button type="button" class="btn danger" id="plDel" style="width:auto">Delete</button>` : ""}<button class="btn" type="submit" id="plSave">${p ? "Save" : "Add"}</button></div>
+  </form>`, { form:true });
+  const f = $("#fPl"); wireSeg(f);
+  $("#plCancel").onclick = () => p ? openPlace(p) : closeSheet();
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const row = { name:f.name.value.trim(), kind:f.kind.value, address:f.address.value.trim()||null, website:normUrl(f.website.value), phone:f.phone.value.trim()||null, maps_url:f.maps_url.value.trim()||null, note:f.note.value.trim()||null };
+    if (!row.name) return $("#plErr").textContent = "Give it a name.";
+    const btn = $("#plSave"); btn.disabled = true; btn.textContent = "Saving…";
+    try {
+      let c = coordsFromUrl(row.maps_url);
+      const moved = !p || p.address !== row.address || p.maps_url !== row.maps_url || p.name !== row.name;
+      if (!c && moved) c = await geocode(row.name, row.address);
+      if (c) Object.assign(row, c);
+      if (p) {
+        const { data, error } = await sb.from(T.places).update(row).eq("id", p.id).select().single(); if (error) throw error;
+        S.places = S.places.map(x => x.id === data.id ? data : x); renderAll(); openPlace(data); toast("Saved");
+      } else if (!c) {
+        closeSheet(); startPlacing(row);
+      } else {
+        const { data, error } = await sb.from(T.places).insert({ ...row, added_by:me }).select().single(); if (error) throw error;
+        S.places.push(data); renderAll(); openPlace(data); toast("Added — the others can vote now");
+      }
+    } catch(err) { $("#plErr").textContent = err.message || String(err); btn.disabled = false; btn.textContent = p ? "Save" : "Add"; }
+  };
+  if (p) $("#plDel").onclick = async () => {
+    const b = $("#plDel"); if (!b.dataset.armed) { b.dataset.armed = 1; b.textContent = "Tap again to delete"; return; }
+    const { error } = await sb.from(T.places).delete().eq("id", p.id);
+    if (error) return $("#plErr").textContent = error.message;
+    S.places = S.places.filter(x => x.id !== p.id); closeSheet(); renderAll(); toast("Deleted");
+  };
+}
+function startPlacing(row){
+  showTab("map"); document.body.classList.add("placing");
   toast("Couldn't find it. Tap the map where it is.");
-  $("#map").classList.add("placing");
   map.once("click", async ev => {
-    $("#map").classList.remove("placing");
-    const { error } = await sb.from(T.places).insert({ ...pendingPlace, lat:ev.latlng.lat, lng:ev.latlng.lng, added_by:me });
-    pendingPlace = null;
+    document.body.classList.remove("placing");
+    const { data, error } = await sb.from(T.places).insert({ ...row, lat:ev.latlng.lat, lng:ev.latlng.lng, added_by:me }).select().single();
     if (error) return toast(error.message);
-    toast("Added — others can vote now"); load();
+    S.places.push(data); renderAll(); openPlace(data); toast("Added — the others can vote now");
   });
 }
 
 // ---------- map ----------
+let map, cluster, markers = {}, activeId = null;
 function initMap(){
   if (map) return;
-  map = L.map("map", { scrollWheelZoom:true }).setView([44.63, 7.95], 12);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom:19, attribution:"© OpenStreetMap" }).addTo(map);
-  renderMarkers();
+  map = L.map("map", { zoomControl:false, attributionControl:true }).setView([44.63, 7.95], 12);
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", { maxZoom:19, subdomains:"abcd",
+    attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>' }).addTo(map);
+  cluster = L.markerClusterGroup({ showCoverageOnHover:false, maxClusterRadius:34, spiderfyOnMaxZoom:true,
+    iconCreateFunction: c => L.divIcon({ className:"", html:`<div class="clu">${c.getChildCount()}</div>`, iconSize:[28,28] }) });
+  map.addLayer(cluster);
+  const strip = $("#strip"); let st;
+  strip.addEventListener("scroll", () => { clearTimeout(st); st = setTimeout(() => {
+    const r = strip.getBoundingClientRect(), mid = r.left + r.width/2;
+    let best = null, bd = 1e9; strip.querySelectorAll(".pc").forEach(c => { const cr = c.getBoundingClientRect(), d = Math.abs(cr.left + cr.width/2 - mid); if (d < bd) { bd = d; best = c; } });
+    if (best && best.dataset.id !== activeId) setActive(best.dataset.id, { pan:true });
+  }, 140); }, { passive:true });
+  renderMarkers(); renderStrip();
 }
+const visible = () => S.places.filter(p => p.lat != null && (mapFilter === "all" || p.kind === mapFilter || (mapFilter === "stay" && p.kind === "other")));
+const pinIcon = (p, sel) => L.divIcon({ className:"", html:`<div class="pin ${p.kind} ${plannedFor(p.id).length?"planned":""} ${sel?"sel":""}"><i class="ti ${PK[p.kind].i}"></i></div>`, iconSize:[28,28], iconAnchor:[14,14] });
 function renderMarkers(){
-  filterBar($("#mapFilters"), mapFilter, k => { mapFilter = k; renderMarkers(); fitMap(); });
-  markers.forEach(m => m.remove()); markers = [];
-  S.places.filter(p => p.lat!=null && (mapFilter==="all" || p.kind===mapFilter || (mapFilter==="stay"&&p.kind==="other"))).forEach(p => {
-    const pd = plannedDays(p.id), v = votesFor(p.id);
-    const icon = L.divIcon({ className:"", html:`<div class="pin ${p.kind} ${pd.length?"planned":""}"><span>${KIND_ICON[p.kind]}</span></div>`, iconSize:[30,30], iconAnchor:[15,30], popupAnchor:[0,-28] });
-    const mine = me && v.some(x=>x.voter.toLowerCase()===me.toLowerCase());
-    const m = L.marker([p.lat,p.lng], { icon }).addTo(map).bindPopup(`<div class="pop">
-      <h3>${esc(p.name)}</h3>
-      <div class="meta">${esc(KIND_LABEL[p.kind])}${p.address?" · "+esc(p.address):""}</div>
-      ${p.note?`<div style="margin-bottom:8px">${esc(p.note)}</div>`:""}
-      ${pd.length?`<div class="meta">📅 In agenda: ${pd.join(", ")}</div>`:""}
-      <div class="acts">
-        <button class="btn small ${mine?"":"ghost"}" data-vote="${p.id}">👍 ${v.length}</button>
-        <button class="btn small ghost" data-plan="${p.id}">＋ Agenda</button>
-        <a class="btn small ghost" style="text-decoration:none" href="${esc(link(p).url)}" target="_blank" rel="noopener">${link(p).label}</a>
-      </div></div>`);
-    m.on("popupopen", ev => {
-      const el = ev.popup.getElement();
-      el.querySelector("[data-vote]").onclick = () => { toggleVote(p.id); map.closePopup(); };
-      el.querySelector("[data-plan]").onclick = () => { map.closePopup(); planPlace(p.id); };
-    });
-    markers.push(m);
+  const chips = [["all","All"],["winery","Wineries"],["restaurant","Restaurants"]];
+  $("#chips").innerHTML = chips.map(([k,l]) => `<button class="chip ${k===mapFilter?"on":""}" data-k="${k}">${l}</button>`).join("") + `<button class="plus" id="mapPlus" aria-label="Suggest a place"><i class="ti ti-plus"></i></button>`;
+  $("#chips").querySelectorAll(".chip").forEach(b => b.onclick = () => { mapFilter = b.dataset.k; renderMarkers(); renderStrip(); fitMap(); });
+  $("#mapPlus").onclick = onPlus;
+  cluster.clearLayers(); markers = {};
+  visible().forEach(p => {
+    const m = L.marker([p.lat, p.lng], { icon:pinIcon(p, p.id === activeId) });
+    m.on("click", () => { setActive(p.id, { scroll:true }); openPlace(p); });
+    markers[p.id] = m; cluster.addLayer(m);
   });
 }
+function renderStrip(){
+  const list = visible().sort((a,b) => a.lng - b.lng);
+  $("#strip").innerHTML = list.map(p => {
+    const pl = plannedFor(p.id)[0], v = votesFor(p.id).length;
+    return `<button class="pc ${p.id===activeId?"active":""}" data-id="${p.id}"><div class="ey">${PK[p.kind].l.toUpperCase()}${town(p) ? " · "+esc(town(p).toUpperCase()) : ""}</div><h3>${esc(p.name)}</h3>
+      <div class="m"><span>${pl ? `<span class="red">${day(pl.day).it} ${hhmm(pl.start_time)}</span>` : "Not planned"}</span><span>♥ ${v}</span></div></button>`;
+  }).join("");
+  $("#strip").querySelectorAll(".pc").forEach(c => c.onclick = () => { setActive(c.dataset.id, { pan:true }); openPlace(placeById(c.dataset.id)); });
+}
+function setActive(id, { pan, scroll } = {}){
+  const prev = activeId; activeId = id;
+  [prev, id].forEach(x => { const p = placeById(x), m = markers[x]; if (p && m) m.setIcon(pinIcon(p, x === id)); });
+  $("#strip").querySelectorAll(".pc").forEach(c => c.classList.toggle("active", c.dataset.id === id));
+  const p = placeById(id);
+  if (pan && p && markers[id]) cluster.zoomToShowLayer(markers[id], () => map.panTo([p.lat, p.lng], { animate:true }));
+  if (scroll) { const c = $(`#strip .pc[data-id="${id}"]`); if (c) c.scrollIntoView({ behavior:"smooth", inline:"center", block:"nearest" }); }
+}
 function fitMap(){
-  if (!map || !markers.length) return;
-  map.fitBounds(L.featureGroup(markers).getBounds(), { paddingTopLeft:[30,40], paddingBottomRight:[30,80] });
+  const pts = visible(); if (!map || !pts.length) return;
+  map.fitBounds(L.latLngBounds(pts.map(p => [p.lat, p.lng])), { paddingTopLeft:[30, 70], paddingBottomRight:[30, 120], maxZoom:14 });
+}
+
+// ---------- ideas ----------
+function renderIdeas(){
+  const groups = ["winery","restaurant","stay","other"].map(k => [k, S.places.filter(p => p.kind === k)]).filter(([,l]) => l.length);
+  if (!groups.length) { $("#ideas").innerHTML = `<div class="empty">No places yet. Tap ＋ to suggest one.</div>`; return; }
+  $("#ideas").innerHTML = groups.map(([k, list]) => `<div class="sec">${PK[k].s}</div><div class="group">${
+    list.map(p => ({ p, v:votesFor(p.id) })).sort((a,b) => b.v.length - a.v.length || a.p.name.localeCompare(b.p.name)).map(({p, v}) => {
+      const pl = plannedFor(p.id)[0], my = mine(p.id);
+      const meta = [town(p) ? esc(town(p)) : "", pl ? `<span class="red">${day(pl.day).it.slice(0,3)} ${hhmm(pl.start_time)}</span>` : `<a class="red" href="${esc(link(p).url)}" target="_blank" rel="noopener" data-stop>${link(p).label}</a>`].filter(Boolean).join(" · ");
+      return `<div class="row" data-id="${p.id}"><div class="b"><div class="t">${esc(p.name)}</div><div class="m">${meta}</div></div><button class="heart ${my?"on":""}" data-vote="${p.id}"><i class="ti ti-heart"></i>${v.length}</button></div>`;
+    }).join("")}</div>`).join("");
+  $("#ideas").querySelectorAll(".row").forEach(r => r.onclick = e => { if (e.target.closest("[data-stop],[data-vote]")) return; openPlace(placeById(r.dataset.id)); });
+  $("#ideas").querySelectorAll("[data-vote]").forEach(b => b.onclick = () => toggleVote(b.dataset.vote));
 }
 
 // ---------- crew ----------
 function renderCrew(){
   const meLc = (me||"").toLowerCase();
-  const added = n => S.events.filter(e=>(e.added_by||"").toLowerCase()===n.toLowerCase()).length + S.places.filter(p=>(p.added_by||"").toLowerCase()===n.toLowerCase()).length;
-  $("#crewList").innerHTML = S.people.length ? S.people.map(p => {
-    const a = added(p.name);
-    return `<div class="card">
-    <div class="avatar">${esc(p.name[0].toUpperCase())}</div>
-    <div class="body"><h3>${esc(p.name)}${p.name.toLowerCase()===meLc?' <span class="tag">you</span>':""}</h3>
-    <div class="meta">${a ? a + (a>1?" things":" thing") + " added" : "Nothing added yet"}</div></div></div>`;
-  }).join("") : `<div class="empty">Nobody yet. People appear here once they open the page and enter their name.</div>`;
+  const count = n => S.events.filter(e => (e.added_by||"").toLowerCase() === n.toLowerCase()).length + S.places.filter(p => (p.added_by||"").toLowerCase() === n.toLowerCase()).length;
+  const votes = n => S.votes.filter(v => v.voter.toLowerCase() === n.toLowerCase()).length;
+  $("#crew").innerHTML = `<div class="sec">${S.people.length} ${S.people.length === 1 ? "PERSON" : "PEOPLE"}</div>` + (S.people.length ? `<div class="group">${S.people.map(p => {
+    const a = count(p.name), v = votes(p.name);
+    const meta = [a ? `${a} added` : "", v ? `${v} ${v>1?"votes":"vote"}` : ""].filter(Boolean).join(" · ") || "Just joined";
+    return `<div class="row" style="cursor:default"><span class="av" style="width:36px;height:36px;font-size:14px;margin:0;border:0;background:${avColor(p.name)}">${esc(p.name[0].toUpperCase())}</span><div class="b"><div class="t">${esc(p.name)}${p.name.toLowerCase()===meLc?'<span class="you">you</span>':""}</div><div class="m">${meta}</div></div></div>`;
+  }).join("")}</div>` : `<div class="empty">People show up here once they open the page and enter their name.</div>`)
+  + `<div class="tip"><i class="ti ti-device-mobile"></i><div><b>Put it on your home screen</b><br>iPhone: Share → Add to Home Screen. Android: menu → Add to Home screen. It then opens like an app.</div></div>`
+  + `<div style="text-align:center;margin-top:16px"><button class="link" id="rename" style="font-size:13.5px">${me ? `Not ${esc(me)}? Change name` : "Enter your name"}</button></div>`;
+  $("#rename").onclick = askName;
 }
 
 // ---------- boot ----------
 const startTab = ["agenda","map","ideas","crew"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "agenda";
-load().then(() => { showTab(startTab); if (!me) $("#dName").showModal(); else registerMe(); });
+showTab(startTab);
+load().then(() => { scrollCal(); if (!me) askName(); else registerMe(); });
+setInterval(() => { if (tab === "agenda" && !document.hidden) renderCal(); }, 60000);
 </script>
 </body>
 </html>
