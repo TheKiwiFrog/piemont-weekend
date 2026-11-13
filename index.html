@@ -85,7 +85,7 @@ section.on{display:block}
 .pin{width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:grid;place-items:center;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)}
 .pin span{transform:rotate(45deg);font-size:14px}
 .pin.winery{background:var(--wine)} .pin.restaurant{background:var(--meal)} .pin.stay,.pin.other{background:var(--stay)}
-.pin.planned{outline:3px solid #f2c14e}
+.pin.planned{outline:3px solid #e0322b;outline-offset:2px}
 .leaflet-popup-content{margin:12px 14px;font:14px/1.4 Inter,sans-serif}
 .pop h3{font-family:Fraunces,serif;margin:0 0 2px;font-size:17px}
 .pop .meta{color:var(--muted);font-size:12px;margin-bottom:8px}
@@ -103,7 +103,7 @@ section.on{display:block}
 .card .note{font-size:13.5px;margin-top:4px}
 .card .tags{margin-top:6px;display:flex;gap:6px;flex-wrap:wrap}
 .tag{font-size:11.5px;padding:2px 8px;border-radius:999px;background:#f1ece6;color:var(--muted)}
-.tag.planned{background:#fdf3d8;color:#8a6510}
+.tag.planned{background:#fde4e2;color:#b3261e}
 .vote{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:6px 10px;font-weight:600;min-width:58px;text-align:center}
 .vote.on{background:var(--wine);border-color:var(--wine);color:#fff}
 .vote small{display:block;font-weight:500;font-size:11px;opacity:.8}
@@ -175,7 +175,7 @@ nav.tabs .in::-webkit-scrollbar{display:none}
   <section id="map-sec">
     <div class="bar">
       <div class="filters" id="mapFilters"></div>
-      <span class="hint">Gold ring = already in the agenda</span>
+      <span class="hint">Red ring = already in the agenda</span>
     </div>
     <div id="map"></div>
   </section>
@@ -222,6 +222,7 @@ nav.tabs .in::-webkit-scrollbar{display:none}
   <select name="kind"><option value="visit">Winery visit</option><option value="meal">Meal</option><option value="drive">Drive</option><option value="other">Other</option></select>
   <label>Notes</label>
   <textarea name="note" maxlength="500" placeholder="Booked? Price? Who confirmed?"></textarea>
+  <div id="evLink" style="margin-top:10px"></div>
   <div class="hint" id="evMeta" style="margin-top:8px"></div>
   <div class="err" id="evErr"></div>
   <div class="actions">
@@ -239,6 +240,8 @@ nav.tabs .in::-webkit-scrollbar{display:none}
     <div><label>Type</label><select name="kind"><option value="winery">Winery</option><option value="restaurant">Restaurant</option><option value="stay">Stay</option><option value="other">Other</option></select></div>
     <div><label>Town / address</label><input name="address" maxlength="200" placeholder="e.g. Castiglione Falletto"></div>
   </div>
+  <label>Website (optional)</label>
+  <input name="website" maxlength="300" placeholder="https://…">
   <label>Google Maps link (optional)</label>
   <input name="maps_url" maxlength="500" placeholder="Paste a link from Google Maps">
   <label>Why?</label>
@@ -292,6 +295,7 @@ const hhmm = t => t.slice(0,5);
 const toast = msg => { const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),2200); };
 const placeById = id => S.places.find(p => p.id === id);
 const votesFor = id => S.votes.filter(v => v.place_id === id);
+const link = p => p.website && /^https?:\/\//.test(p.website) ? { url:p.website, label:"Website ↗" } : { url:gmaps(p), label:"Google Maps ↗" };
 const gmaps = p => p.maps_url && /^https?:\/\//.test(p.maps_url) ? p.maps_url
   : (p.lat!=null ? `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.name+" "+(p.address||"")+" Piemonte")}`);
 const dayLabel = d => { const x = DAYS.find(z=>z[0]===d); return x ? `${x[1]} ${x[2]}` : d; };
@@ -394,12 +398,15 @@ function openEvent(ev, preset={}){
   f.kind.value = v.kind || "visit"; f.note.value = v.note || "";
   f.place_id.innerHTML = placeOptions(v.place_id);
   $("#evMeta").textContent = ev ? `Added by ${ev.added_by||"someone"}` : "";
+  showEvLink(v.place_id);
   $("#evErr").textContent = ""; $("#evDel").style.display = ev ? "" : "none"; $("#evDel").dataset.armed = "";
   $("#evDel").textContent = "Delete";
   $("#dEvent").showModal();
 }
+function showEvLink(id){ const p = id && placeById(id); $("#evLink").innerHTML = p ? `<a class="btn small ghost" style="text-decoration:none" href="${esc(link(p).url)}" target="_blank" rel="noopener">${esc(p.name)} · ${link(p).label}</a>` : ""; }
 $("#fEvent").place_id.addEventListener("change", e => {
   const f = $("#fEvent"), p = placeById(e.target.value);
+  showEvLink(e.target.value);
   if (p && !f.title.value.trim()) f.title.value = p.name;
   if (p) f.kind.value = p.kind==="restaurant" ? "meal" : (p.kind==="winery" ? "visit" : f.kind.value);
 });
@@ -450,7 +457,7 @@ function renderIdeas(){
         <div class="tags">
           ${pd.length?`<span class="tag planned">📅 ${pd.join(", ")}</span>`:""}
           ${v.length?`<span class="tag">👍 ${esc(v.map(x=>x.voter).join(", "))}</span>`:""}
-          <a class="tag" href="${esc(gmaps(p))}" target="_blank" rel="noopener">Google Maps ↗</a>
+          <a class="tag" href="${esc(link(p).url)}" target="_blank" rel="noopener">${link(p).label}</a>
           <button class="tag" style="border:0" data-plan="${p.id}">＋ agenda</button>
           <button class="tag" style="border:0" data-edit="${p.id}">edit</button>
         </div>
@@ -484,11 +491,12 @@ function openPlace(p){
   editingPlace = p;
   const f = $("#fPlace");
   $("#plTitle").textContent = p ? "Edit place" : "Suggest a place";
-  f.name.value = p?.name||""; f.kind.value = p?.kind||"winery"; f.address.value = p?.address||""; f.maps_url.value = p?.maps_url||""; f.note.value = p?.note||"";
+  f.name.value = p?.name||""; f.kind.value = p?.kind||"winery"; f.address.value = p?.address||""; f.maps_url.value = p?.maps_url||""; f.website.value = p?.website||""; f.note.value = p?.note||"";
   $("#plErr").textContent = ""; $("#plDel").style.display = p ? "" : "none"; $("#plDel").dataset.armed=""; $("#plDel").textContent="Delete";
   $("#plMeta").textContent = p ? `Added by ${p.added_by||"someone"}` : "We'll find it on the map automatically. If we can't, you'll be asked to tap where it is.";
   $("#dPlace").showModal();
 }
+function normUrl(u){ u = (u||"").trim(); if (!u) return null; return /^https?:\/\//i.test(u) ? u : "https://" + u; }
 function coordsFromUrl(u){
   if (!u) return null;
   let m = u.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/) || u.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || u.match(/[?&](?:q|query|ll)=(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
@@ -508,7 +516,7 @@ async function geocode(name, addr){
 $("#fPlace").addEventListener("submit", async e => {
   e.preventDefault();
   const f = e.target, btn = $("#plSave");
-  const row = { name:f.name.value.trim(), kind:f.kind.value, address:f.address.value.trim()||null, maps_url:f.maps_url.value.trim()||null, note:f.note.value.trim()||null };
+  const row = { name:f.name.value.trim(), kind:f.kind.value, address:f.address.value.trim()||null, maps_url:f.maps_url.value.trim()||null, website:normUrl(f.website.value), note:f.note.value.trim()||null };
   btn.disabled = true; btn.textContent = "Saving…";
   try {
     let c = coordsFromUrl(row.maps_url);
@@ -570,7 +578,7 @@ function renderMarkers(){
       <div class="acts">
         <button class="btn small ${mine?"":"ghost"}" data-vote="${p.id}">👍 ${v.length}</button>
         <button class="btn small ghost" data-plan="${p.id}">＋ Agenda</button>
-        <a class="btn small ghost" style="text-decoration:none" href="${esc(gmaps(p))}" target="_blank" rel="noopener">Maps ↗</a>
+        <a class="btn small ghost" style="text-decoration:none" href="${esc(link(p).url)}" target="_blank" rel="noopener">${link(p).label}</a>
       </div></div>`);
     m.on("popupopen", ev => {
       const el = ev.popup.getElement();
